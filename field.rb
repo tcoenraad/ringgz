@@ -10,6 +10,7 @@ class Field
   THIRD_CLASS = 3
   FOURTH_CLASS = 4
 
+  attr_reader :rings
   attr_reader :x
   attr_reader :y
 
@@ -22,9 +23,9 @@ class Field
 
     if start
       @rings[RING_XS] = FIRST_CLASS
-      @rings[RING_S] = SECOND_CLASS
-      @rings[RING_M] = THIRD_CLASS
-      @rings[RING_L] = FOURTH_CLASS
+      @rings[RING_S]  = SECOND_CLASS
+      @rings[RING_M]  = THIRD_CLASS
+      @rings[RING_L]  = FOURTH_CLASS
     end
   end
 
@@ -38,7 +39,7 @@ class Field
       if !@rings.has_key?(SOLID) && !@rings.has_key?(ring)
         # solid rings cannot be placed
         # if there are yet any other rings
-        unless ring == SOLID && !@rings.empty?
+        if (ring != SOLID || (@rings.empty? && neighbours_without_solids?(klass)))
           return @rings[ring] = klass
         end
       end
@@ -48,21 +49,25 @@ class Field
   end
 
   protected
-  def classes
-    classes = []
-    @rings.each do |klass|
-      classes << klass
-    end
-    classes
+  def neighbours?(klass)
+    neighbours = {}
+    neighbours.merge! @board[self.x - 1, self.y].rings unless self.x - 1 < 0
+    neighbours.merge! @board[self.x + 1, self.y].rings unless self.x + 1 > Board::DIM
+    neighbours.merge! @board[self.x, self.y - 1].rings unless self.y - 1 < 0
+    neighbours.merge! @board[self.x, self.y + 1].rings unless self.y + 1 > Board::DIM
+    
+    neighbours.flatten.include?(klass)
   end
 
-  def neighbours?(klass)
-    neighbouring_classes = []
-    neighbouring_classes << @board[self.x - 1, self.y].classes unless self.x - 1 < 0
-    neighbouring_classes << @board[self.x + 1, self.y].classes unless self.x + 1 > Board::DIM
-    neighbouring_classes << @board[self.x, self.y - 1].classes unless self.y - 1 < 0
-    neighbouring_classes << @board[self.x, self.y + 1].classes unless self.y + 1 > Board::DIM
-    neighbouring_classes.flatten.include?(klass)
+  def neighbours_without_solids?(klass)
+    neighbours = {}
+    neighbours.merge! @board[self.x - 1, self.y].rings unless self.x - 1 < 0
+    neighbours.merge! @board[self.x + 1, self.y].rings unless self.x + 1 > Board::DIM
+    neighbours.merge! @board[self.x, self.y - 1].rings unless self.y - 1 < 0
+    neighbours.merge! @board[self.x, self.y + 1].rings unless self.y + 1 > Board::DIM
+    
+    neighbours.delete(SOLID)
+    neighbours.flatten.include?(klass)
   end
 
   def inspect

@@ -42,13 +42,25 @@ describe Board, 'Board' do
     board = Board.new
   
     expect {
-      board[1, 1] = [Field::SOLID, Field::FIRST_CLASS]
+      board[1, 1] = [Field::RING_S, Field::FIRST_CLASS]
     }.to raise_error
-    board[2, 1] = [Field::SOLID, Field::FIRST_CLASS]
-    board[1, 1] = [Field::SOLID, Field::FIRST_CLASS]
+    board[2, 1] = [Field::RING_XS, Field::FIRST_CLASS]
+    board[1, 1] = [Field::RING_S, Field::FIRST_CLASS]
 
     expect {
-      board[1, 1] = [Field::SOLID, Field::SECOND_CLASS]
+      board[1, 1] = [Field::RING_S, Field::SECOND_CLASS]
     }.to raise_error
+  end
+
+  it "will not accept a solid ring if only nearby other solid rings" do
+    board = Board.new
+  
+    board[2, 1] = [Field::SOLID, Field::FIRST_CLASS]
+    expect {
+      board[1, 1] = [Field::SOLID, Field::FIRST_CLASS]
+    }.to raise_error
+
+    board[1, 2] = [Field::RING_XS, Field::FIRST_CLASS]
+    board[1, 1] = [Field::SOLID, Field::FIRST_CLASS]
   end
 end

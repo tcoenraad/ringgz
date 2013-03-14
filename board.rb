@@ -1,10 +1,11 @@
 require_relative 'field'
 class Board
   DIM = 5
-  attr_accessor :fields
 
   def initialize
     @fields = Array.new(DIM) { |x| Array.new(DIM) { |y| Field.new self, x, y } }
+
+    # start ring
     @fields[2][2] = Field.new self, 2, 2, true
   end
 
