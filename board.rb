@@ -19,7 +19,7 @@ class Board
 
   def []=(x, y, val)
     if @fields[x]
-      @fields[x][y].add_ring val
+      @fields[x][y].add_ring val[0], val[1]
     else
       false
     end
