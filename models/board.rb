@@ -2,11 +2,11 @@ require_relative 'field'
 class Board
   DIM = 5
 
-  def initialize
+  def initialize(x_start = 2, y_start = 2)
     @fields = Array.new(DIM) { |x| Array.new(DIM) { |y| Field.new self, x, y } }
 
     # start ring
-    @fields[2][2] = Field.new self, 2, 2, true
+    @fields[x_start][y_start] = Field.new self, 2, 2, true
   end
 
   def [](x, y)

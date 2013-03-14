@@ -76,8 +76,4 @@ class Field
     
     neighbours
   end
-
-  def inspect
-    @rings
-  end
 end

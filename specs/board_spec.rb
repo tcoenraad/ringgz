@@ -1,4 +1,4 @@
-require_relative '../board'
+require_relative '../models/board'
 
 describe Board do
   before :each do

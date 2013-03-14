@@ -1,4 +1,4 @@
-require_relative '../field'
+require_relative '../models/field'
 
 describe Field do
   before :each do
