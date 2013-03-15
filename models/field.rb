@@ -1,16 +1,20 @@
 require_relative 'board'
 
 class Field
-  SOLID = 0
-  RING_XS = 1
-  RING_S = 2
-  RING_M = 3
-  RING_L = 4
+  RINGS = {
+    :solid   => 0,
+    :ring_xs => 1,
+    :ring_s  => 2,
+    :ring_m  => 3,
+    :ring_l  => 4,
+  }
 
-  FIRST_CLASS = 0
-  SECOND_CLASS = 1
-  THIRD_CLASS = 2
-  FOURTH_CLASS = 3
+  CLASSES = {
+    :first  => 0,
+    :second => 1,
+    :third  => 2,
+    :fourth => 3
+  }
 
   attr_reader :rings
   attr_reader :x
@@ -23,13 +27,24 @@ class Field
     @x = x
     @y = y
 
-    # this mimics a stone allowing all combinations to be made
+    # this mimics a start stone by allowing all combinations that can be made
     if start
-      @rings[RING_XS] = FIRST_CLASS
-      @rings[RING_S]  = SECOND_CLASS
-      @rings[RING_M]  = THIRD_CLASS
-      @rings[RING_L]  = FOURTH_CLASS
+      @rings[RINGS[:ring_xs]] = CLASSES[:first]
+      @rings[RINGS[:ring_s]]  = CLASSES[:second]
+      @rings[RINGS[:ring_m]]  = CLASSES[:third]
+      @rings[RINGS[:ring_l]]  = CLASSES[:fourth]
     end
+  end
+
+  def winner
+    CLASSES.each do |klass|
+      klass = klass[1]
+      if winner?(klass)
+        return klass
+      end
+    end
+
+    false
   end
 
   def winner?(klass)
@@ -53,11 +68,11 @@ class Field
     if neighbouring_classes.include?(klass)
       # a solid ring cannot have any inner rings
       # and rings cannot be overwritten
-      if !@rings.has_key?(SOLID) && !@rings.has_key?(ring)
         # solid rings cannot be placed
+      if !@rings.has_key?(RINGS[:solid]) && !@rings.has_key?(ring)
         # if there are yet any other rings on the field
         # or there are solids near
-        if ring != SOLID || (@rings.empty? && !neighbouring_rings.include?(SOLID))
+        if ring != RINGS[:solid] || (@rings.empty? && !neighbouring_rings.include?(RINGS[:solid]))
           return @rings[ring] = klass
         end
       end

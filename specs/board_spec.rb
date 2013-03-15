@@ -13,54 +13,89 @@ describe Board do
     @board[5, 5].should_not be_an_instance_of Field
   end
 
-  it "will handle multiple different rings, but not twice" do
-    @board[2, 1] = [Field::RING_XS, Field::FIRST_CLASS]
-    @board[2, 1].should be_an_instance_of Field
-    @board[2, 1] = [Field::RING_S, Field::FIRST_CLASS]
-    @board[2, 1].should be_an_instance_of Field
+  describe "with regard to placing rings" do
+    it "will handle multiple different rings, but not twice" do
+      @board[2, 1] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
+      @board[2, 1].should be_an_instance_of Field
+      @board[2, 1] = [Field::RINGS[:ring_s], Field::CLASSES[:first]]
+      @board[2, 1].should be_an_instance_of Field
 
-    expect {
-      @board[2, 1] = [Field::RING_S, Field::FIRST_CLASS]
-    }.to raise_error
+      expect {
+        @board[2, 1] = [Field::RINGS[:ring_s], Field::CLASSES[:first]]
+      }.to raise_error
+    end
+
+    it "will after adding a non solid ring, not accept a solid ring" do
+      @board[2, 1] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
+      expect {
+        @board[2, 1] = [Field::RINGS[:solid], Field::CLASSES[:first]]
+      }.to raise_error
+    end
+
+    it "will after adding a solid ring, not accept any other ring" do
+      @board[2, 1] = [Field::RINGS[:solid], Field::CLASSES[:first]]
+      expect {
+        @board[2, 1] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
+      }.to raise_error
+    end
+
+    it "will not accept any ring if not nearby ring from same class" do
+      expect {
+        @board[1, 1] = [Field::RINGS[:ring_s], Field::CLASSES[:first]]
+      }.to raise_error
+      @board[2, 1] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
+
+      expect {
+        @board[1, 1] = [Field::RINGS[:ring_s], Field::CLASSES[:second]]
+      }.to raise_error
+
+      @board[1, 1] = [Field::RINGS[:ring_s], Field::CLASSES[:first]]
+    end
+
+    it "will not accept a solid ring if nearby any other solid rings" do
+      @board[2, 1] = [Field::RINGS[:solid], Field::CLASSES[:first]]
+      expect {
+        @board[1, 1] = [Field::RINGS[:solid], Field::CLASSES[:first]]
+      }.to raise_error
+      expect {
+        @board[1, 1] = [Field::RINGS[:solid], Field::CLASSES[:second]]
+      }.to raise_error
+
+      @board[1, 1] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
+      @board[1, 0] = [Field::RINGS[:solid], Field::CLASSES[:first]]
+    end
   end
 
-  it "will after adding a non solid ring, not accept a solid ring" do
-    @board[2, 1] = [Field::RING_XS, Field::FIRST_CLASS]
-    expect {
-      @board[2, 1] = [Field::SOLID, Field::FIRST_CLASS]
-    }.to raise_error
-  end
+  describe "with regard to the score board" do
+    it "has no winner if empty" do
+      @board.winner?(Field::CLASSES[:first]).should be_false
+    end
 
-  it "will after adding a solid ring, not accept any other ring" do
-    @board[2, 1] = [Field::SOLID, Field::FIRST_CLASS]
-    expect {
-      @board[2, 1] = [Field::RING_XS, Field::FIRST_CLASS]
-    }.to raise_error
-  end
+    it "has a winner when one ring is placed" do
+      @board[2, 1] = [Field::RINGS[:solid], Field::CLASSES[:first]]
 
-  it "will not accept any ring if not nearby ring from same class" do
-    expect {
-      @board[1, 1] = [Field::RING_S, Field::FIRST_CLASS]
-    }.to raise_error
-    @board[2, 1] = [Field::RING_XS, Field::FIRST_CLASS]
+      @board.winner?(Field::CLASSES[:first]).should be_true
+      @board.winner?(Field::CLASSES[:second]).should be_false
+    end
 
-    expect {
-      @board[1, 1] = [Field::RING_S, Field::SECOND_CLASS]
-    }.to raise_error
+    it "has no winner when two classes are equally divided" do
+      @board[2, 1] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
+      @board[1, 1] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
+      @board[2, 3] = [Field::RINGS[:ring_xs], Field::CLASSES[:second]]
+      @board[3, 3] = [Field::RINGS[:ring_xs], Field::CLASSES[:second]]
 
-    @board[1, 1] = [Field::RING_S, Field::FIRST_CLASS]
-  end
+      @board.winner?(Field::CLASSES[:first]).should be_false
+      @board.winner?(Field::CLASSES[:second]).should be_false
+    end
 
-  it "will not accept a solid ring if nearby any other solid rings" do
-    @board[2, 1] = [Field::SOLID, Field::FIRST_CLASS]
-    expect {
-      @board[1, 1] = [Field::SOLID, Field::FIRST_CLASS]
-    }.to raise_error
-    expect {
-      @board[1, 1] = [Field::SOLID, Field::SECOND_CLASS]
-    }.to raise_error
+    it "has a winner when two classes are not equally divided" do
+      @board[2, 1] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
+      @board[1, 2] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
+      @board[1, 1] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
+      @board[2, 3] = [Field::RINGS[:ring_xs], Field::CLASSES[:second]]
 
-    @board[1, 1] = [Field::RING_XS, Field::FIRST_CLASS]
-    @board[1, 0] = [Field::SOLID, Field::FIRST_CLASS]
+      @board.winner?(Field::CLASSES[:first]).should be_true
+      @board.winner?(Field::CLASSES[:second]).should be_false
+    end
   end
 end

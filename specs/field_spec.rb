@@ -6,87 +6,87 @@ describe Field do
   end
 
   it "has no winner if empty" do
-    @field.winner?(Field::FIRST_CLASS).should be_false
+    @field.winner?(Field::CLASSES[:first]).should be_false
   end
 
   it "has a winner when one ring is placed" do
-    @field.add_ring(Field::SOLID, Field::FIRST_CLASS)
+    @field.add_ring(Field::RINGS[:solid], Field::CLASSES[:first])
 
-    @field.winner?(Field::FIRST_CLASS).should be_true
-    @field.winner?(Field::SECOND_CLASS).should be_false
+    @field.winner?(Field::CLASSES[:first]).should be_true
+    @field.winner?(Field::CLASSES[:second]).should be_false
   end
 
   it "has no winner when two classes are equally divided" do
-    @field.add_ring(Field::RING_XS, Field::FIRST_CLASS)
-    @field.add_ring(Field::RING_S, Field::FIRST_CLASS)
-    @field.add_ring(Field::RING_M, Field::SECOND_CLASS)
-    @field.add_ring(Field::RING_L, Field::SECOND_CLASS)
+    @field.add_ring(Field::RINGS[:ring_xs], Field::CLASSES[:first])
+    @field.add_ring(Field::RINGS[:ring_s], Field::CLASSES[:first])
+    @field.add_ring(Field::RINGS[:ring_m], Field::CLASSES[:second])
+    @field.add_ring(Field::RINGS[:ring_l], Field::CLASSES[:second])
 
-    @field.winner?(Field::FIRST_CLASS).should be_false
-    @field.winner?(Field::SECOND_CLASS).should be_false
+    @field.winner?(Field::CLASSES[:first]).should be_false
+    @field.winner?(Field::CLASSES[:second]).should be_false
   end
 
   it "has a winner when two classes are not equally divided" do
-    @field.add_ring(Field::RING_XS, Field::FIRST_CLASS)
-    @field.add_ring(Field::RING_S, Field::FIRST_CLASS)
-    @field.add_ring(Field::RING_M, Field::FIRST_CLASS)
-    @field.add_ring(Field::RING_L, Field::SECOND_CLASS)
+    @field.add_ring(Field::RINGS[:ring_xs], Field::CLASSES[:first])
+    @field.add_ring(Field::RINGS[:ring_s], Field::CLASSES[:first])
+    @field.add_ring(Field::RINGS[:ring_m], Field::CLASSES[:first])
+    @field.add_ring(Field::RINGS[:ring_l], Field::CLASSES[:second])
 
-    @field.winner?(Field::FIRST_CLASS).should be_true
-    @field.winner?(Field::SECOND_CLASS).should be_false
+    @field.winner?(Field::CLASSES[:first]).should be_true
+    @field.winner?(Field::CLASSES[:second]).should be_false
   end
 
   it "has a winner when two classes are not equally divided" do
-    @field.add_ring(Field::RING_XS, Field::FIRST_CLASS)
-    @field.add_ring(Field::RING_S, Field::SECOND_CLASS)
-    @field.add_ring(Field::RING_M, Field::SECOND_CLASS)
-    @field.add_ring(Field::RING_L, Field::SECOND_CLASS)
+    @field.add_ring(Field::RINGS[:ring_xs], Field::CLASSES[:first])
+    @field.add_ring(Field::RINGS[:ring_s], Field::CLASSES[:second])
+    @field.add_ring(Field::RINGS[:ring_m], Field::CLASSES[:second])
+    @field.add_ring(Field::RINGS[:ring_l], Field::CLASSES[:second])
 
-    @field.winner?(Field::FIRST_CLASS).should be_false
-    @field.winner?(Field::SECOND_CLASS).should be_true
+    @field.winner?(Field::CLASSES[:first]).should be_false
+    @field.winner?(Field::CLASSES[:second]).should be_true
   end
 
   it "has no winner when three classes are equally divided" do
-    @field.add_ring(Field::RING_XS, Field::FIRST_CLASS)
-    @field.add_ring(Field::RING_S, Field::SECOND_CLASS)
-    @field.add_ring(Field::RING_M, Field::THIRD_CLASS)
+    @field.add_ring(Field::RINGS[:ring_xs], Field::CLASSES[:first])
+    @field.add_ring(Field::RINGS[:ring_s], Field::CLASSES[:second])
+    @field.add_ring(Field::RINGS[:ring_m], Field::CLASSES[:third])
 
-    @field.winner?(Field::FIRST_CLASS).should be_false
-    @field.winner?(Field::SECOND_CLASS).should be_false
-    @field.winner?(Field::THIRD_CLASS).should be_false
+    @field.winner?(Field::CLASSES[:first]).should be_false
+    @field.winner?(Field::CLASSES[:second]).should be_false
+    @field.winner?(Field::CLASSES[:third]).should be_false
   end
 
   it "has a winner when three classes are not equally divided" do
-    @field.add_ring(Field::RING_XS, Field::FIRST_CLASS)
-    @field.add_ring(Field::RING_S, Field::FIRST_CLASS)
-    @field.add_ring(Field::RING_M, Field::SECOND_CLASS)
-    @field.add_ring(Field::RING_L, Field::THIRD_CLASS)
+    @field.add_ring(Field::RINGS[:ring_xs], Field::CLASSES[:first])
+    @field.add_ring(Field::RINGS[:ring_s], Field::CLASSES[:first])
+    @field.add_ring(Field::RINGS[:ring_m], Field::CLASSES[:second])
+    @field.add_ring(Field::RINGS[:ring_l], Field::CLASSES[:third])
 
-    @field.winner?(Field::FIRST_CLASS).should be_true
-    @field.winner?(Field::SECOND_CLASS).should be_false
-    @field.winner?(Field::THIRD_CLASS).should be_false
+    @field.winner?(Field::CLASSES[:first]).should be_true
+    @field.winner?(Field::CLASSES[:second]).should be_false
+    @field.winner?(Field::CLASSES[:third]).should be_false
   end
 
   it "has a winner when three classes are not equally divided" do
-    @field.add_ring(Field::RING_XS, Field::FIRST_CLASS)
-    @field.add_ring(Field::RING_S, Field::SECOND_CLASS)
-    @field.add_ring(Field::RING_M, Field::THIRD_CLASS)
-    @field.add_ring(Field::RING_L, Field::THIRD_CLASS)
+    @field.add_ring(Field::RINGS[:ring_xs], Field::CLASSES[:first])
+    @field.add_ring(Field::RINGS[:ring_s], Field::CLASSES[:second])
+    @field.add_ring(Field::RINGS[:ring_m], Field::CLASSES[:third])
+    @field.add_ring(Field::RINGS[:ring_l], Field::CLASSES[:third])
 
-    @field.winner?(Field::FIRST_CLASS).should be_false
-    @field.winner?(Field::SECOND_CLASS).should be_false
-    @field.winner?(Field::THIRD_CLASS).should be_true
+    @field.winner?(Field::CLASSES[:first]).should be_false
+    @field.winner?(Field::CLASSES[:second]).should be_false
+    @field.winner?(Field::CLASSES[:third]).should be_true
   end
 
   it "has no winner when four classes are equally divided" do
-    @field.add_ring(Field::RING_XS, Field::FIRST_CLASS)
-    @field.add_ring(Field::RING_S, Field::SECOND_CLASS)
-    @field.add_ring(Field::RING_M, Field::THIRD_CLASS)
-    @field.add_ring(Field::RING_L, Field::FOURTH_CLASS)
+    @field.add_ring(Field::RINGS[:ring_xs], Field::CLASSES[:first])
+    @field.add_ring(Field::RINGS[:ring_s], Field::CLASSES[:second])
+    @field.add_ring(Field::RINGS[:ring_m], Field::CLASSES[:third])
+    @field.add_ring(Field::RINGS[:ring_l], Field::CLASSES[:fourth])
 
-    @field.winner?(Field::FIRST_CLASS).should be_false
-    @field.winner?(Field::SECOND_CLASS).should be_false
-    @field.winner?(Field::THIRD_CLASS).should be_false
-    @field.winner?(Field::FOURTH_CLASS).should be_false
+    @field.winner?(Field::CLASSES[:first]).should be_false
+    @field.winner?(Field::CLASSES[:second]).should be_false
+    @field.winner?(Field::CLASSES[:third]).should be_false
+    @field.winner?(Field::CLASSES[:fourth]).should be_false
   end
 end
