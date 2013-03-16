@@ -6,7 +6,16 @@ class Board
 
   def initialize(x_start = DIM/2, y_start = DIM/2)
     @fields = Array.new(DIM) { |x| Array.new(DIM) { |y| Field.new self, x, y } }
-    @stock = Array.new(Field::CLASSES.count) { Array.new(Field::RINGS.count) { AMOUNT_PER_RING } }
+    @stock = {}
+
+    Field::CLASSES.each_value do |klass|
+      default_stock = {}
+      Field::RINGS.each_value do |ring|
+        default_stock[ring] = AMOUNT_PER_RING
+      end
+
+      @stock[klass] = default_stock
+    end
 
     # start ring
     @fields[x_start][y_start] = Field.new self, 2, 2, true
@@ -18,11 +27,19 @@ class Board
 
   def deduct_from_stock?(ring, klass)
     @stock[klass][ring] != 0
-  end 
+  end
+
+  def stock(klass)
+    res = 0
+    @stock[klass].each_value do |val|
+      res += val
+    end
+
+    res
+  end
 
   def winner
-    Fields::CLASSES.each do |klass|
-      klass = klass[1]
+    Fields::CLASSES.each_value do |klass|
       if winner?(klass)
         return klass
       end
@@ -32,27 +49,52 @@ class Board
   end
 
   def winner?(klass)
-    if gameover
-      classes = Array.new(4, 0)
-      @fields.flatten.each do |field|
-        winning_class = field.winner
-        if winning_class
-          classes[winning_class] += 1
-        end
+    classes = Array.new(4, 0)
+    @fields.flatten.each do |field|
+      winning_class = field.winner
+      if winning_class
+        classes[winning_class] += 1
       end
+    end
 
-      classes_sorted = classes.sort.reverse
-      if classes_sorted.first == classes[klass] && classes_sorted.first != classes_sorted[1]
-        return true
-      end
+    classes_sorted = classes.sort.reverse
+    if classes_sorted.first == classes[klass] && classes_sorted.first != classes_sorted[1]
+      return true
     end
 
     false
   end
 
-  def gameover
-    #todo
+  def a_ring_can_be_placed(klass)
+    res = false
+    @stock[klass].each_pair do |ring, value|
+      if value > 0
+        @fields.flatten.each do |field|
+          res ||= field.place_ring?(ring, klass)
+        end
+      end
+    end
+
+    res
+  end
+
+  def gameover?(klass)
+    if stock(klass) > 0
+      if a_ring_can_be_placed(klass)
+        return false
+      end
+    end
+
     true
+  end
+
+  def gameover
+    gameover = true
+    Field::CLASSES.each_value do |klass|
+      gameover &&=gameover?(klass)
+    end
+
+    gameover
   end
 
   def [](x, y)

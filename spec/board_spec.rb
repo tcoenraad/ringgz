@@ -79,13 +79,48 @@ describe Board do
     end
   end
 
+  describe "with regard to gameover" do
+    it "is gameover if all rings are used" do
+      @board[2, 1] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
+      @board[2, 1] = [Field::RINGS[:ring_s], Field::CLASSES[:first]]
+      @board[2, 1] = [Field::RINGS[:ring_m], Field::CLASSES[:first]]
+      @board[2, 1] = [Field::RINGS[:ring_l], Field::CLASSES[:first]]
+
+      @board[1, 1] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
+      @board[1, 1] = [Field::RINGS[:ring_s], Field::CLASSES[:first]]
+      @board[1, 1] = [Field::RINGS[:ring_m], Field::CLASSES[:first]]
+      @board[1, 1] = [Field::RINGS[:ring_l], Field::CLASSES[:first]]
+
+      @board[3, 1] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
+      @board[3, 1] = [Field::RINGS[:ring_s], Field::CLASSES[:first]]
+      @board[3, 1] = [Field::RINGS[:ring_m], Field::CLASSES[:first]]
+      @board[3, 1] = [Field::RINGS[:ring_l], Field::CLASSES[:first]]
+
+      @board[0, 1] = [Field::RINGS[:solid], Field::CLASSES[:first]]
+      @board[1, 2] = [Field::RINGS[:solid], Field::CLASSES[:first]]
+
+      @board.gameover?(Field::CLASSES[:first]).should be_false
+      @board[3, 0] = [Field::RINGS[:solid], Field::CLASSES[:first]]
+      @board.gameover?(Field::CLASSES[:first]).should be_true
+      @board.gameover.should be_false
+    end
+  end
+
   describe "with regard to the winners" do
     it "has no winner if empty" do
       @board.winner?(Field::CLASSES[:first]).should be_false
     end
 
-    it "has a winner when one ring is placed" do
+    it "has no winner when one solid is placed" do
       @board[2, 1] = [Field::RINGS[:solid], Field::CLASSES[:first]]
+
+      @board.winner?(Field::CLASSES[:first]).should be_false
+      @board.winner?(Field::CLASSES[:second]).should be_false
+    end
+
+
+    it "has a winner when one ring is placed" do
+      @board[2, 1] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
 
       @board.winner?(Field::CLASSES[:first]).should be_true
       @board.winner?(Field::CLASSES[:second]).should be_false

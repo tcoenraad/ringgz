@@ -3,7 +3,7 @@ require_relative '../models/game'
 describe Game do
   describe 'with regard to two players' do
     before :each do
-      @game = Game.new(2, 2, 2)
+      @game = Game.new(2)
     end
 
     it 'loops through the player list' do
@@ -30,11 +30,29 @@ describe Game do
       @game.winner?(0).should be_true
       @game.winner?(1).should be_false
     end
+
+    it 'detects a gameover for one player' do
+      board = Board.new
+      @game.instance_variable_set :@board, board
+
+      board[3, 2] = [Field::RINGS[:solid], Field::CLASSES[:first]]
+      board[1, 2] = [Field::RINGS[:solid], Field::CLASSES[:first]]
+      board[2, 3] = [Field::RINGS[:solid], Field::CLASSES[:first]]
+      board[2, 1] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
+      board[2, 1] = [Field::RINGS[:ring_s], Field::CLASSES[:first]]
+      board[2, 1] = [Field::RINGS[:ring_m], Field::CLASSES[:first]]
+      @game.gameover?(0).should be_false
+      @game.gameover?(1).should be_false
+
+      board[2, 1] = [Field::RINGS[:ring_l], Field::CLASSES[:first]]
+      @game.gameover?(0).should be_false
+      @game.gameover?(1).should be_true
+    end
   end
 
   describe 'with regard to three players' do
     before :each do
-      @game = Game.new(3, 2, 2)
+      @game = Game.new(3)
     end
 
     it 'loops through the player list' do
@@ -73,7 +91,7 @@ describe Game do
 
   describe 'with regard to four players' do
     before :each do
-      @game = Game.new(4, 2, 2)
+      @game = Game.new(4)
     end
 
     it 'loops through the player list' do

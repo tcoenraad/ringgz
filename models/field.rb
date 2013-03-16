@@ -37,8 +37,7 @@ class Field
   end
 
   def winner
-    CLASSES.each do |klass|
-      klass = klass[1]
+    CLASSES.each_value do |klass|
       if winner?(klass)
         return klass
       end
@@ -48,34 +47,48 @@ class Field
   end
 
   def winner?(klass)
-    classes = Array.new(4, 0)
-    @rings.values.each do |klass|
-      classes[klass] += 1
-    end
+    # solids are neutral
+    if @rings[RINGS[:solid]].nil?
+      classes = Array.new(4, 0)
+      @rings.values.each do |klass|
+        classes[klass] += 1
+      end
 
-    classes_sorted = classes.sort.reverse
-    if classes_sorted.first == classes[klass] && classes_sorted.first != classes_sorted[1]
-      return true
+      classes_sorted = classes.sort.reverse
+      if classes_sorted.first == classes[klass] && classes_sorted.first != classes_sorted[1]
+        return true
+      end
     end
 
     false
+  end
+
+  def place_ring?(ring, klass)
+    begin
+      place_ring(ring, klass)
+      @rings.delete(ring)
+
+      return true
+    rescue
+      return false
+    end
   end
 
   def place_ring(ring, klass)
     if neighbouring_classes.include?(klass)
       # a solid ring cannot have any inner rings
       # and rings cannot be overwritten
-        # solid rings cannot be placed
       if !@rings.has_key?(RINGS[:solid]) && !@rings.has_key?(ring)
-        # if there are yet any other rings on the field
-        # or there are solids near
+        # solid rings only be placed
+        # if there are not yet any other rings on the field
+        # or there are no solids near
         if ring != RINGS[:solid] || (@rings.empty? && !neighbouring_rings.include?(RINGS[:solid]))
           return @rings[ring] = klass
         end
       end
     end
 
-    raise "This ring #{ring} with class #{klass} cannot be placed on this field (x = #{x}, y = #{y}), with neigbouring classes #{neighbouring_rings} and rings #{neighbouring_rings}"
+    raise "This ring #{ring} with class #{klass} cannot be placed on this field (x = #{x}, y = #{y}), with neighbouring classes #{neighbouring_rings} and rings #{neighbouring_rings}"
   end
 
   protected

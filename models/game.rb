@@ -1,33 +1,39 @@
 require_relative 'board'
 
 class Game
-  def initialize(player_count, x = Board::DIM/2-1..Board::DIM/2+1, y = Board::DIM/2-1..Board::DIM/2+1)
+  PLAYERS = {
+    :one   => 0,
+    :two   => 1,
+    :three => 2,
+    :four  => 3
+  }
+
+  def initialize(player_count, x = 2, y = 2)
     @board = Board.new(x, y)
 
     @current_player = 0
-    @players = []
+    @players = {}
     if player_count == 2
-      @players << [Field::CLASSES[:first], Field::CLASSES[:second]]
-      @players << [Field::CLASSES[:third], Field::CLASSES[:fourth]]
+      @players[PLAYERS[:one]] = [Field::CLASSES[:first], Field::CLASSES[:second]]
+      @players[PLAYERS[:two]] = [Field::CLASSES[:third], Field::CLASSES[:fourth]]
     elsif player_count == 3
-      @players << [Field::CLASSES[:first], Field::CLASSES[:fourth]]
-      @players << [Field::CLASSES[:second], Field::CLASSES[:fourth]]
-      @players << [Field::CLASSES[:third], Field::CLASSES[:fourth]]
+      @players[PLAYERS[:one]]   = [Field::CLASSES[:first], Field::CLASSES[:fourth]]
+      @players[PLAYERS[:two]]   = [Field::CLASSES[:second], Field::CLASSES[:fourth]]
+      @players[PLAYERS[:three]] = [Field::CLASSES[:third], Field::CLASSES[:fourth]]
 
-      @fourth_class_stock = Hash.new { Hash.new }
-      Field::RINGS.each do |ring|
-        ring = ring[1]
+      @fourth_class_stock = {}
+      Field::RINGS.each_value do |ring|
         @fourth_class_stock[ring] = {
-          0 => true,
-          1 => true,
-          2 => true
+          Field::CLASSES[:first]  => true,
+          Field::CLASSES[:second] => true,
+          Field::CLASSES[:third]  => true
         }
       end
     elsif player_count == 4
-      @players << [Field::CLASSES[:first]]
-      @players << [Field::CLASSES[:second]]
-      @players << [Field::CLASSES[:third]]
-      @players << [Field::CLASSES[:fourth]]
+      @players[PLAYERS[:one]]   = [Field::CLASSES[:first]]
+      @players[PLAYERS[:two]]   = [Field::CLASSES[:second]]
+      @players[PLAYERS[:three]] = [Field::CLASSES[:third]]
+      @players[PLAYERS[:four]]  = [Field::CLASSES[:fourth]]
     end
   end
 
@@ -37,6 +43,26 @@ class Game
 
   def player_count
     @players.count
+  end
+
+  def gameover?(player)
+    gameover = true
+
+    @players[player].each do |klass|
+      gameover &&= @board.gameover?(klass)
+    end
+
+    gameover
+  end
+
+  def winner
+    @players.each_key do |player|
+      if winner?(klass)
+        return @players.key(klass)
+      end
+    end
+
+    false
   end
 
   def winner?(player)
@@ -69,8 +95,17 @@ class Game
   end
 
   def next_player
-    @current_player += 1
-    @current_player = player % player_count
+    i = 0
+    loop do 
+      i += 1
+      @current_player += 1
+      @current_player = player % player_count
+      break unless i < player_count && gameover?(player)
+    end
+
+    if i == player_count
+      raise "There is no next player that can place a ring, game is over"
+    end
   end
 
   def deduct_from_fourth_class_stock(ring, klass)
@@ -79,6 +114,5 @@ class Game
 
   def deduct_from_fourth_class_stock?(ring, klass)
     @fourth_class_stock[ring][klass]
-  end 
-
+  end
 end

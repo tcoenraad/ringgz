@@ -9,8 +9,15 @@ describe Field do
     @field.winner?(Field::CLASSES[:first]).should be_false
   end
 
-  it "has a winner when one ring is placed" do
+  it "has no winner when one solid is placed" do
     @field.place_ring(Field::RINGS[:solid], Field::CLASSES[:first])
+
+    @field.winner?(Field::CLASSES[:first]).should be_false
+    @field.winner?(Field::CLASSES[:second]).should be_false
+  end
+
+  it "has a winner when one ring is placed" do
+    @field.place_ring(Field::RINGS[:rings_xs], Field::CLASSES[:first])
 
     @field.winner?(Field::CLASSES[:first]).should be_true
     @field.winner?(Field::CLASSES[:second]).should be_false
