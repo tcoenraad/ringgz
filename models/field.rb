@@ -61,10 +61,7 @@ class Field
     false
   end
 
-  def add_ring(ring, klass)
-    neighbouring_classes = neighbours.values.flatten
-    neighbouring_rings = neighbours.keys.flatten
-
+  def place_ring(ring, klass)
     if neighbouring_classes.include?(klass)
       # a solid ring cannot have any inner rings
       # and rings cannot be overwritten
@@ -78,7 +75,7 @@ class Field
       end
     end
 
-    raise "This type of ring cannot be placed"
+    raise "This ring #{ring} with class #{klass} cannot be placed on this field (x = #{x}, y = #{y}), with neigbouring classes #{neighbouring_rings} and rings #{neighbouring_rings}"
   end
 
   protected
