@@ -82,13 +82,24 @@ class Field
   end
 
   protected
-  def neighbours
-    neighbours = {}
-    neighbours.merge! @board[self.x - 1, self.y].rings unless self.x - 1 < 0
-    neighbours.merge! @board[self.x + 1, self.y].rings unless self.x + 1 > Board::DIM
-    neighbours.merge! @board[self.x, self.y - 1].rings unless self.y - 1 < 0
-    neighbours.merge! @board[self.x, self.y + 1].rings unless self.y + 1 > Board::DIM
-    
-    neighbours
+  def neighbouring_rings
+    neighbouring_rings = []
+    neighbouring_rings << @board[self.x - 1, self.y].rings.keys unless self.x - 1 < 0
+    neighbouring_rings << @board[self.x + 1, self.y].rings.keys unless self.x + 1 > Board::DIM
+    neighbouring_rings << @board[self.x, self.y - 1].rings.keys unless self.y - 1 < 0
+    neighbouring_rings << @board[self.x, self.y + 1].rings.keys unless self.y + 1 > Board::DIM
+
+    neighbouring_rings.flatten
+  end
+
+
+  def neighbouring_classes
+    neighbouring_classes = []
+    neighbouring_classes << @board[self.x - 1, self.y].rings.values unless self.x - 1 < 0
+    neighbouring_classes << @board[self.x + 1, self.y].rings.values unless self.x + 1 > Board::DIM
+    neighbouring_classes << @board[self.x, self.y - 1].rings.values unless self.y - 1 < 0
+    neighbouring_classes << @board[self.x, self.y + 1].rings.values unless self.y + 1 > Board::DIM
+
+    neighbouring_classes.flatten
   end
 end
