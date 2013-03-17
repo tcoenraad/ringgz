@@ -1,4 +1,4 @@
-require_relative 'server'
+require_relative 'models/server'
 require 'socket'
 require 'colorize'
 
@@ -6,10 +6,12 @@ GREET = 'greet'
 JOIN  = 'join'
 PLACE = 'place'
 ERROR = 'error'
+CHAT = 'chat'
+TRUES = '1'
 
 server = TCPServer.open(7269)
-@server = Server.new
 @clients = []
+@server = Server.new(@clients)
 id = 0
 
 loop do
@@ -33,8 +35,10 @@ loop do
             name = command[1]
             raise 'The given name is already in use' if @clients.map{|c| c[:name]}.include?(name)
 
-            client[:name] = command[1]
-            client[:socket].puts "#{GREET} 0 0"
+            client[:name]      = command[1]
+            client[:chat]      = command[2] == TRUES
+            client[:challenge] = command[3] == TRUES
+            client[:socket].puts "#{GREET} 1 0"
           else
             raise 'You first need to introduce yourself to the server to continue -- `greet NAME`'
           end
@@ -43,6 +47,10 @@ loop do
             @server.join(client, command[1].to_i)
           elsif command.first == PLACE
             @server.place(client, command[1].to_i, command[2].to_i, command[3])
+          elsif command.first == CHAT
+            @server.chat(client, line)
+          # elsif command.first == CHALLENGE
+          #   @server.challenge(client, command[1], command[2], command[3])
           else
             raise 'The given command is not supported, refer to the protocol for the correct syntax'
           end

@@ -2,7 +2,7 @@ require_relative '../models/server'
 
 describe Server do
   before :each do
-    @server = Server.new
+    @server = Server.new([])
   end
 
   it 'will handle join requests' do

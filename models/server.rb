@@ -4,9 +4,11 @@ START = 'start'
 SERVER_PLACE = 'place'
 NOTIFY = 'notify'
 WINNER = 'winner'
+SERVER_CHAT = 'chat'
 
 class Server
-  def initialize
+  def initialize(clients)
+    @clients = clients
     @join_list = { 2 => [], 3 => [], 4 => [] }
     @games = {}
   end
@@ -68,6 +70,23 @@ class Server
         socket.puts "#{WINNER} #{game[:game].winners.join(' ')}"
       end
       @games.delete(client[:game_id])
+    end
+  end
+
+  def chat(client, line)
+    name = client[:name]
+    msg = "#{SERVER_CHAT} #{name} #{line[SERVER_CHAT.length+1..-1]}"
+
+    if !client[:game_id]
+      sockets_in_lobby = @clients.map { |c| c[:socket] if !c[:game_id] && c[:chat] }.compact
+      sockets_in_lobby.each do |socket|
+        socket.puts msg
+      end
+    else
+      sockets_in_game = @games[client[:game_id]][:clients].map { |c| c[:socket] if c[:chat] }.compact
+      sockets_in_game.each do |socket|
+        socket.puts msg
+      end
     end
   end
 end
