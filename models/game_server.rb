@@ -1,20 +1,23 @@
 require_relative 'server'
 require 'socket'
+require 'colorize'
 
 GREET = 'greet'
 JOIN  = 'join'
+PLACE = 'place'
 ERROR = 'error'
 
 server = TCPServer.open(7269)
 @server = Server.new
 @clients = []
+id = 0
 
 loop do
   Thread.start(server.accept) do |client|
     begin
       client = {
         :socket => client,
-        :id => @clients.count,
+        :id => id += 1,
         :ip => client.peeraddr[3]
       }
       @clients << client
@@ -33,22 +36,26 @@ loop do
             client[:name] = command[1]
             client[:socket].puts "#{GREET} 0 0"
           else
-            raise 'You first need to introduce yourself to continue -- `greet NAME`'
+            raise 'You first need to introduce yourself to the server to continue -- `greet NAME`'
           end
         else
           if command.first == JOIN
             @server.join(client, command[1].to_i)
+          elsif command.first == PLACE
+            @server.place(client, command[1].to_i, command[2].to_i, command[3])
           else
             raise 'The given command is not supported, refer to the protocol for the correct syntax'
           end
         end
       end
     rescue Exception => e
-      puts "[exception] Client ##{client[:id]} from #{client[:ip]}: #{e.message}"
-      puts e.backtrace.join("\n")
+      puts "[exception] Client ##{client[:id]} from #{client[:ip]}: #{e.message}".red
+      puts e.backtrace.join("\n").yellow
 
       client[:socket].puts "#{ERROR} #{e.message}"
     ensure
+      puts "[info] Client ##{client[:id]} from #{client[:ip]} disconnects"
+
       client[:socket].close
       @clients.delete(client)
     end
