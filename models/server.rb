@@ -2,6 +2,8 @@ require_relative 'game'
 
 START = 'start'
 SERVER_PLACE = 'place'
+NOTIFY = 'notify'
+WINNER = 'winner'
 
 class Server
   def initialize
@@ -10,7 +12,10 @@ class Server
   end
 
   def join(client, player_count)
-    raise 'The player count should be between 2 and 4' unless player_count >= 2 && player_count <= 4
+    raise 'The player count should be between 2 and 4' if player_count < 2 || player_count > 4
+    @join_list.each_value do |list|
+      list.delete(client)
+    end
 
     @join_list[player_count] << client
 
@@ -53,13 +58,16 @@ class Server
       game[:game].place_ring(x, y, ring, klass)
 
       game[:clients].map { |c| c[:socket] }.each do |socket|
-        socket.puts "#{SERVER_PLACE} #{klass} #{ring} #{location}"
+        socket.puts "#{NOTIFY} #{klass} #{ring} #{location}"
       end
 
       current_client = game[:clients][game[:game].player][:socket]
       current_client.puts SERVER_PLACE
-    rescue GameOverError => e
-      puts e.message
+    rescue GameOverError
+      game[:clients].map { |c| c[:socket] }.each do |socket|
+        socket.puts "#{WINNER} #{game[:game].winners.join(' ')}"
+      end
+      @games.delete(client[:game_id])
     end
   end
 end
