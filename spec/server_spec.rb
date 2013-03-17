@@ -6,8 +6,8 @@ describe Server do
   end
 
   it 'will handle join requests' do
-    @server.stub(:play).and_return(true)
-    @server.should_receive(:play).exactly(3)
+    @server.stub(:setup_game).and_return(true)
+    @server.should_receive(:setup_game).exactly(3)
 
     @server.join('client1', 3)
     @server.join('client2', 3)
