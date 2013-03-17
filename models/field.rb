@@ -88,7 +88,7 @@ class Field
       end
     end
 
-    raise "This ring #{ring} with class #{klass} cannot be placed on this field (x = #{x}, y = #{y}), with neighbouring classes #{neighbouring_rings} and rings #{neighbouring_rings}"
+    raise "This ring #{ring} with class #{klass} cannot be placed on this field [#{x}, #{y}], with neighbouring classes #{neighbouring_rings} and rings #{neighbouring_rings}"
   end
 
   protected

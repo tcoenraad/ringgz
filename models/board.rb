@@ -114,6 +114,6 @@ class Board
       return @fields[x][y].place_ring ring, klass
     end
 
-    raise "This ring #{ring} with class #{klass} cannot be placed on this board (x = #{x}, y = #{y})"
+    raise "This ring #{ring} with class #{klass} cannot be placed on this board [#{x}, #{y}]"
   end
 end

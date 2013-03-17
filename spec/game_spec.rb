@@ -6,11 +6,19 @@ describe Game do
       @game = Game.new(2)
     end
 
+    it 'does only accept a class when it belongs to the player' do
+      @game.place_ring(2, 1, Field::RINGS[:ring_xs], 0)
+      expect {
+        @game.place_ring(2, 1, Field::RINGS[:ring_s], 1)
+      }.to raise_error
+      @game.place_ring(2, 1, Field::RINGS[:ring_s], 2)
+    end
+
     it 'loops through the player list' do
       @game.player.should be_equal 0
       @game.place_ring(2, 1, Field::RINGS[:ring_xs], 0)
       @game.player.should be_equal 1
-      @game.place_ring(2, 1, Field::RINGS[:ring_s], 0)
+      @game.place_ring(2, 1, Field::RINGS[:ring_s], 2)
       @game.player.should be_equal 0
     end
 
@@ -22,7 +30,7 @@ describe Game do
       @game.winner?(0).should be_true
       @game.winner?(1).should be_false
 
-      @game.place_ring(1, 2, Field::RINGS[:ring_xs], 0)
+      @game.place_ring(1, 2, Field::RINGS[:ring_xs], 2)
       @game.winner?(0).should be_false
       @game.winner?(1).should be_false
 
@@ -55,13 +63,22 @@ describe Game do
       @game = Game.new(3)
     end
 
+    it 'does only accept a class when it belongs to the player' do
+      @game.place_ring(2, 1, Field::RINGS[:ring_xs], 0)
+      expect {
+        @game.place_ring(2, 1, Field::RINGS[:ring_s], 0)
+      }.to raise_error
+      @game.place_ring(2, 1, Field::RINGS[:ring_s], 1)
+      @game.place_ring(2, 1, Field::RINGS[:ring_m], 3)
+    end
+
     it 'loops through the player list' do
       @game.player.should be_equal 0
       @game.place_ring(2, 1, Field::RINGS[:ring_xs], 0)
       @game.player.should be_equal 1
-      @game.place_ring(2, 1, Field::RINGS[:ring_s], 0)
+      @game.place_ring(2, 1, Field::RINGS[:ring_s], 1)
       @game.player.should be_equal 2
-      @game.place_ring(2, 1, Field::RINGS[:ring_m], 0)
+      @game.place_ring(2, 1, Field::RINGS[:ring_m], 2)
       @game.player.should be_equal 0
     end
 
@@ -75,8 +92,8 @@ describe Game do
       @game.winner?(1).should be_false
       @game.winner?(2).should be_false
 
-      @game.place_ring(1, 2, Field::RINGS[:ring_xs], 0)
-      @game.place_ring(3, 2, Field::RINGS[:ring_xs], 0)
+      @game.place_ring(1, 2, Field::RINGS[:ring_xs], 1)
+      @game.place_ring(3, 2, Field::RINGS[:ring_xs], 2)
       @game.place_ring(1, 1, Field::RINGS[:ring_xs], 0)
       @game.winner?(0).should be_true
       @game.winner?(1).should be_false
@@ -94,15 +111,30 @@ describe Game do
       @game = Game.new(4)
     end
 
+    it 'does only accept a class when it belongs to the player' do
+      @game.place_ring(2, 1, Field::RINGS[:ring_xs], 0)
+      expect {
+        @game.place_ring(2, 1, Field::RINGS[:ring_s], 0)
+      }.to raise_error
+
+      @game.place_ring(2, 1, Field::RINGS[:ring_s], 1)
+      expect {
+        @game.place_ring(2, 1, Field::RINGS[:ring_l], 3)
+      }.to raise_error
+
+      @game.place_ring(2, 1, Field::RINGS[:ring_m], 2)
+      @game.place_ring(2, 1, Field::RINGS[:ring_l], 3)
+    end
+
     it 'loops through the player list' do
       @game.player.should be_equal 0
       @game.place_ring(2, 1, Field::RINGS[:ring_xs], 0)
       @game.player.should be_equal 1
-      @game.place_ring(2, 1, Field::RINGS[:ring_s], 0)
+      @game.place_ring(2, 1, Field::RINGS[:ring_s], 1)
       @game.player.should be_equal 2
-      @game.place_ring(2, 1, Field::RINGS[:ring_m], 0)
+      @game.place_ring(2, 1, Field::RINGS[:ring_m], 2)
       @game.player.should be_equal 3
-      @game.place_ring(2, 1, Field::RINGS[:ring_l], 0)
+      @game.place_ring(2, 1, Field::RINGS[:ring_l], 3)
       @game.player.should be_equal 0
     end
 
@@ -118,9 +150,9 @@ describe Game do
       @game.winner?(2).should be_false
       @game.winner?(3).should be_false
 
-      @game.place_ring(1, 2, Field::RINGS[:ring_xs], 0)
-      @game.place_ring(3, 2, Field::RINGS[:ring_s], 0)
-      @game.place_ring(2, 3, Field::RINGS[:ring_m], 0)
+      @game.place_ring(1, 2, Field::RINGS[:ring_xs], 1)
+      @game.place_ring(3, 2, Field::RINGS[:ring_s], 2)
+      @game.place_ring(2, 3, Field::RINGS[:ring_m], 3)
       @game.winner?(0).should be_false
       @game.winner?(1).should be_false
       @game.winner?(2).should be_false

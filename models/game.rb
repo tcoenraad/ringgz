@@ -90,7 +90,9 @@ class Game
       end
     end
 
-    @board[x, y] = [ring, @players[@current_player][klass]]
+    raise "This class #{klass} does not belong to player #{player}" unless @players[@current_player].include?(klass)
+
+    @board[x, y] = [ring, klass]
     next_player
   end
 
