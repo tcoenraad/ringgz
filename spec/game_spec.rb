@@ -23,8 +23,7 @@ describe Game do
     end
 
     it 'gives the right winner at each moment' do
-      @game.winner?(0).should be_false
-      @game.winner?(1).should be_false
+      @game.winner.should be_false
 
       @game.place_ring(2, 1, Field::RINGS[:ring_xs], 0)
       @game.winner?(0).should be_true
@@ -37,6 +36,14 @@ describe Game do
       @game.place_ring(1, 1, Field::RINGS[:ring_xs], 0)
       @game.winner?(0).should be_true
       @game.winner?(1).should be_false
+
+      @game.place_ring(3, 2, Field::RINGS[:ring_xs], 2)
+      @game.winner?(0).should be_false
+      @game.winner?(1).should be_false
+
+      @game.place_ring(1, 1, Field::RINGS[:ring_s], 0)
+      @game.winner?(0).should be_false
+      @game.winner?(1).should be_true
     end
 
     it 'detects a gameover for one player' do
@@ -54,6 +61,31 @@ describe Game do
 
       board[2, 1] = [Field::RINGS[:ring_l], Field::CLASSES[:first]]
       @game.gameover?(0).should be_false
+      @game.gameover?(1).should be_true
+    end
+
+    it 'detects a gameover for all players' do
+      stub_const("Board::AMOUNT_PER_RING", 1)
+
+      @game = Game.new(2)
+      @game.place_ring(1, 2, Field::RINGS[:ring_xs], 0)
+      @game.place_ring(2, 1, Field::RINGS[:ring_xs], 2)
+      @game.place_ring(1, 2, Field::RINGS[:ring_s], 0)
+      @game.place_ring(2, 1, Field::RINGS[:ring_s], 2)
+      @game.place_ring(1, 2, Field::RINGS[:ring_m], 0)
+      @game.place_ring(2, 1, Field::RINGS[:ring_m], 2)
+      @game.place_ring(1, 2, Field::RINGS[:ring_l], 0)
+      @game.place_ring(2, 1, Field::RINGS[:ring_l], 2)
+
+      @game.gameover?(0).should be_false
+      @game.gameover?(1).should be_false
+
+      @game.place_ring(3, 2, Field::RINGS[:solid], 0)
+      expect {
+        @game.place_ring(2, 3, Field::RINGS[:solid], 2)
+      }.to raise_error GameOverError
+
+      @game.gameover?(0).should be_true
       @game.gameover?(1).should be_true
     end
   end
@@ -83,9 +115,7 @@ describe Game do
     end
 
     it 'gives the right winner at each moment' do
-      @game.winner?(0).should be_false
-      @game.winner?(1).should be_false
-      @game.winner?(2).should be_false
+      @game.winner.should be_false
 
       @game.place_ring(2, 1, Field::RINGS[:ring_xs], 0)
       @game.winner?(0).should be_true
@@ -102,6 +132,9 @@ describe Game do
       @game.place_ring(2, 1, Field::RINGS[:ring_s], 1)
       @game.winner?(0).should be_false
       @game.winner?(1).should be_false
+      @game.winner?(2).should be_true
+
+      @game.place_ring(2, 1, Field::RINGS[:ring_m], 2)
       @game.winner?(2).should be_false
     end
   end
@@ -139,10 +172,7 @@ describe Game do
     end
 
     it 'gives the right winner at each moment' do
-      @game.winner?(0).should be_false
-      @game.winner?(1).should be_false
-      @game.winner?(2).should be_false
-      @game.winner?(3).should be_false
+      @game.winner.should be_false
 
       @game.place_ring(2, 1, Field::RINGS[:ring_xs], 0)
       @game.winner?(0).should be_true
@@ -151,18 +181,18 @@ describe Game do
       @game.winner?(3).should be_false
 
       @game.place_ring(1, 2, Field::RINGS[:ring_xs], 1)
-      @game.place_ring(3, 2, Field::RINGS[:ring_s], 2)
-      @game.place_ring(2, 3, Field::RINGS[:ring_m], 3)
-      @game.winner?(0).should be_false
-      @game.winner?(1).should be_false
-      @game.winner?(2).should be_false
-      @game.winner?(3).should be_false
+      @game.place_ring(3, 2, Field::RINGS[:ring_xs], 2)
+      @game.place_ring(2, 3, Field::RINGS[:ring_xs], 3)
+      @game.winner.should be_false
 
-      @game.place_ring(1, 1, Field::RINGS[:ring_s], 0)
+      @game.place_ring(1, 1, Field::RINGS[:ring_xs], 0)
       @game.winner?(0).should be_true
       @game.winner?(1).should be_false
       @game.winner?(2).should be_false
       @game.winner?(3).should be_false
+
+      @game.place_ring(0, 2, Field::RINGS[:ring_xs], 1)
+      @game.winner.should be_false
     end
   end
 end

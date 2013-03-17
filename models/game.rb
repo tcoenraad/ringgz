@@ -57,8 +57,8 @@ class Game
 
   def winner
     @players.each_key do |player|
-      if winner?(klass)
-        return @players.key(klass)
+      if winner?(player)
+        return @players.key(player)
       end
     end
 
@@ -66,18 +66,34 @@ class Game
   end
 
   def winner?(player)
-    winner = false
+    won_fields_per_class = @board.won_fields_per_class
 
-    # for three players, the fourth class is neutral
-    if player_count == 3
-      winner ||= @board.winner?(@players[player].first)
-    else
-      @players[player].each do |klass|
-        winner ||= @board.winner?(klass)
+    won_fields = Hash.new(0)
+    stock = Hash.new(0)
+    @players.each_pair do |player, classes|
+      classes.each do |klass|
+        # for three players the fourth class is neutral
+        next if klass == Field::CLASSES[:fourth] && player_count == 3
+
+        won_fields[player] += won_fields_per_class[klass]
+        stock[player] += @board.stock(klass)
       end
     end
 
-    winner
+    max_won_fields = won_fields.values.max
+    winning_players = won_fields.select{ |k, v| v == max_won_fields }.keys
+    # a player has won if he has the majority of the fields
+    if won_fields[player] == max_won_fields
+      # and is the only one
+      if winning_players.count == 1
+        return true
+      # or is the one with the largest stock
+      elsif stock[player] > stock.select{ |k, v| k != player && winning_players.include?(k) }.values.max
+        return true
+      end
+    end
+
+    false
   end
 
   def place_ring(x, y, ring, klass)
@@ -86,7 +102,7 @@ class Game
       if deduct_from_fourth_class_stock?(ring, player)
         deduct_from_fourth_class_stock(ring, player)
       else
-        raise "This ring #{ring} with class #{klass} by player #{player} cannot be placed on this game board (x = #{x}, y = #{y})"
+        raise "This ring #{ring} with class #{klass} by player #{player} cannot be placed on this game board [#{x}, #{y}]"
       end
     end
 
@@ -102,11 +118,12 @@ class Game
       i += 1
       @current_player += 1
       @current_player = player % player_count
-      break unless i < player_count && gameover?(player)
+
+      break if !gameover?(player) || i > player_count
     end
 
-    if i == player_count
-      raise "There is no next player that can place a ring, game is over"
+    if i > player_count
+      raise GameOverError, "There is no next player that can place a ring, game is over"
     end
   end
 
@@ -118,3 +135,5 @@ class Game
     @fourth_class_stock[ring][klass]
   end
 end
+
+class GameOverError < StandardError; end

@@ -49,13 +49,17 @@ class Server
 
     x = location[0].to_i
     y = location[1].to_i
-    game[:game].place_ring(x, y, ring, klass)
+    begin
+      game[:game].place_ring(x, y, ring, klass)
 
-    game[:clients].map { |c| c[:socket] }.each do |socket|
-      socket.puts "#{SERVER_PLACE} #{klass} #{ring} #{location}"
+      game[:clients].map { |c| c[:socket] }.each do |socket|
+        socket.puts "#{SERVER_PLACE} #{klass} #{ring} #{location}"
+      end
+
+      current_client = game[:clients][game[:game].player][:socket]
+      current_client.puts SERVER_PLACE
+    rescue GameOverError => e
+      puts e.message
     end
-
-    current_client = game[:clients][game[:game].player][:socket]
-    current_client.puts SERVER_PLACE
   end
 end

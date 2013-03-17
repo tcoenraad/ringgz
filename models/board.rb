@@ -38,17 +38,7 @@ class Board
     res
   end
 
-  def winner
-    Fields::CLASSES.each_value do |klass|
-      if winner?(klass)
-        return klass
-      end
-    end
-
-    false
-  end
-
-  def winner?(klass)
+  def won_fields_per_class
     classes = Array.new(4, 0)
     @fields.flatten.each do |field|
       winning_class = field.winner
@@ -56,13 +46,7 @@ class Board
         classes[winning_class] += 1
       end
     end
-
-    classes_sorted = classes.sort.reverse
-    if classes_sorted.first == classes[klass] && classes_sorted.first != classes_sorted[1]
-      return true
-    end
-
-    false
+    classes
   end
 
   def a_ring_can_be_placed(klass)
@@ -86,15 +70,6 @@ class Board
     end
 
     true
-  end
-
-  def gameover
-    gameover = true
-    Field::CLASSES.each_value do |klass|
-      gameover &&=gameover?(klass)
-    end
-
-    gameover
   end
 
   def [](x, y)
