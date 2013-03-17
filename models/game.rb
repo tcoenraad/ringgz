@@ -88,7 +88,7 @@ class Game
       if winning_players.count == 1
         return true
       # or is the one with the largest stock
-      elsif stock[player] > stock.select{ |k, v| k != player && winning_players.include?(k) }.values.max
+      elsif stock[player] >= stock.select{ |k, v| k != player && winning_players.include?(k) }.values.max
         return true
       end
     end

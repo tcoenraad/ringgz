@@ -30,16 +30,16 @@ describe Game do
       @game.winner?(1).should be_false
 
       @game.place_ring(1, 2, Field::RINGS[:ring_xs], 2)
-      @game.winner?(0).should be_false
-      @game.winner?(1).should be_false
+      @game.winner?(0).should be_true
+      @game.winner?(1).should be_true
 
       @game.place_ring(1, 1, Field::RINGS[:ring_xs], 0)
       @game.winner?(0).should be_true
       @game.winner?(1).should be_false
 
       @game.place_ring(3, 2, Field::RINGS[:ring_xs], 2)
-      @game.winner?(0).should be_false
-      @game.winner?(1).should be_false
+      @game.winner?(0).should be_true
+      @game.winner?(1).should be_true
 
       @game.place_ring(1, 1, Field::RINGS[:ring_s], 0)
       @game.winner?(0).should be_false
@@ -135,7 +135,7 @@ describe Game do
       @game.winner?(2).should be_true
 
       @game.place_ring(2, 1, Field::RINGS[:ring_m], 2)
-      @game.winner?(2).should be_false
+      @game.winner?(2).should be_true
     end
   end
 
