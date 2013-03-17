@@ -55,12 +55,15 @@ class Game
     gameover
   end
 
-  def winner
+  def winners
+    winners = []
     @players.each_key do |player|
       if winner?(player)
-        return @players.key(player)
+        winners << player
       end
     end
+
+    return winners unless winners.empty?
 
     false
   end
