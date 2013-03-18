@@ -25,13 +25,13 @@ class Server
       clients = @join_list[player_count].shuffle
       @join_list[player_count].clear
 
-      setup_game(clients)
+      x = rand(Board::DIM/2-1..Board::DIM/2+1)
+      y = rand(Board::DIM/2-1..Board::DIM/2+1)
+      setup_game(clients, x, y)
     end
   end
 
-  def setup_game(clients)
-    x = rand(Board::DIM/2-1..Board::DIM/2+1)
-    y = rand(Board::DIM/2-1..Board::DIM/2+1)
+  def setup_game(clients, x = 2, y = 2)
     game = Game.new(clients.count, x, y)
     game_id = game.__id__
 
@@ -74,6 +74,7 @@ class Server
   end
 
   def chat(client, line)
+    raise 'You have not enabled the chat -- join with `greet PLAYER_NAME 1`' unless client[:chat]
     name = client[:name]
     msg = "#{SERVER_CHAT} #{name} #{line[SERVER_CHAT.length+1..-1]}"
 

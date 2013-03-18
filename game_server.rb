@@ -14,6 +14,7 @@ server = TCPServer.open(7269)
 @server = Server.new(@clients)
 id = 0
 
+puts "[info] Server started on port 7269"
 loop do
   Thread.start(server.accept) do |client|
     begin
