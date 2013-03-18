@@ -43,8 +43,7 @@ describe Server do
     it 'will let each player place a ring when it is his turn' do
       games = {}
       game_clients = [@clients[1], @clients[2]]
-      game = Game.new(2)
-      games[1] = { :game => game, :clients => game_clients }
+      games[1] = { :game => Game.new(2), :clients => game_clients }
 
       @server.instance_variable_set(:@games, games)
 
@@ -71,23 +70,21 @@ describe Server do
 
       games = {}
       game_clients = [@clients[1], @clients[2]]
-      game = Game.new(2)
-      games[1] = { :game => game, :clients => game_clients }
+      games[1] = { :game => Game.new(2), :clients => game_clients }
 
       @server.instance_variable_set(:@games, games)
-
-      game.place_ring(1, 2, Field::RINGS[:ring_xs], 0)
-      game.place_ring(2, 1, Field::RINGS[:ring_xs], 2)
-      game.place_ring(1, 2, Field::RINGS[:ring_s], 0)
-      game.place_ring(2, 1, Field::RINGS[:ring_s], 2)
-      game.place_ring(1, 2, Field::RINGS[:ring_m], 0)
-      game.place_ring(2, 1, Field::RINGS[:ring_m], 2)
-      game.place_ring(1, 2, Field::RINGS[:ring_l], 0)
-      game.place_ring(2, 1, Field::RINGS[:ring_l], 2)
 
       @clients[1][:socket].should_receive(:puts).exactly(1).with("#{WINNER} 0 1")
       @clients[2][:socket].should_receive(:puts).exactly(1).with("#{WINNER} 0 1")
 
+      @server.place(@clients[1], 0, Field::RINGS[:ring_xs], '12')
+      @server.place(@clients[2], 2, Field::RINGS[:ring_xs], '21')
+      @server.place(@clients[1], 0, Field::RINGS[:ring_s], '12')
+      @server.place(@clients[2], 2, Field::RINGS[:ring_s], '21')
+      @server.place(@clients[1], 0, Field::RINGS[:ring_m], '12')
+      @server.place(@clients[2], 2, Field::RINGS[:ring_m], '21')
+      @server.place(@clients[1], 0, Field::RINGS[:ring_l], '12')
+      @server.place(@clients[2], 2, Field::RINGS[:ring_l], '21')
       @server.place(@clients[1], 0, Field::RINGS[:solid], '32')
       @server.place(@clients[2], 2, Field::RINGS[:solid], '23')
 
