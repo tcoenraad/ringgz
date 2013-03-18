@@ -32,33 +32,69 @@ describe Server do
     @server.setup_game(clients)
   end
 
-  it 'will let each player place a ring when it is his turn' do
-    clients = []
-    clients << { :socket => @socket, :name => 'client0' }
-    clients << { :socket => @socket, :name => 'client1', :game_id => 1 }
-    clients << { :socket => @socket, :name => 'client2', :game_id => 1 }
+  describe 'with regard to games' do
+    before :each do
+      @clients = []
+      @clients << { :socket => @socket, :name => 'client0' }
+      @clients << { :socket => @socket, :name => 'client1', :game_id => 1 }
+      @clients << { :socket => @socket, :name => 'client2', :game_id => 1 }
+    end
 
-    games = {}
-    game_clients = [clients[1], clients[2]]
-    games[1] = { :game => Game.new(2), :clients => game_clients }
+    it 'will let each player place a ring when it is his turn' do
+      games = {}
+      game_clients = [@clients[1], @clients[2]]
+      game = Game.new(2)
+      games[1] = { :game => game, :clients => game_clients }
 
-    @server.instance_variable_set(:@games, games)
-    clients[1][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} 0 1 21")
-    clients[2][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} 0 1 21")
-    clients[2][:socket].should_receive(:puts).exactly(1).with("#{SERVER_PLACE}")
-    clients[1][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} 2 2 21")
-    clients[2][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} 2 2 21")
-    clients[1][:socket].should_receive(:puts).exactly(1).with("#{SERVER_PLACE}")
+      @server.instance_variable_set(:@games, games)
 
-    expect {
-      @server.place(clients[0], 0, 1, '21')
-    }.to raise_error
+      @clients[1][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} 0 1 21")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} 0 1 21")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{SERVER_PLACE}")
+      @clients[1][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} 2 2 21")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} 2 2 21")
+      @clients[1][:socket].should_receive(:puts).exactly(1).with("#{SERVER_PLACE}")
 
-    @server.place(clients[1], 0, 1, '21')
-    expect {
-      @server.place(clients[1], 0, 2, '21')
-    }.to raise_error
-    @server.place(clients[2], 2, 2, '21')
+      expect {
+        @server.place(@clients[0], 0, 1, '21')
+      }.to raise_error ServerError
+
+      @server.place(@clients[1], 0, 1, '21')
+      expect {
+        @server.place(@clients[1], 0, 2, '21')
+      }.to raise_error ServerError
+      @server.place(@clients[2], 2, 2, '21')
+    end
+
+    it 'will detect a gameover and give the winners' do
+      stub_const("Board::AMOUNT_PER_RING", 1)
+
+      games = {}
+      game_clients = [@clients[1], @clients[2]]
+      game = Game.new(2)
+      games[1] = { :game => game, :clients => game_clients }
+
+      @server.instance_variable_set(:@games, games)
+
+      game.place_ring(1, 2, Field::RINGS[:ring_xs], 0)
+      game.place_ring(2, 1, Field::RINGS[:ring_xs], 2)
+      game.place_ring(1, 2, Field::RINGS[:ring_s], 0)
+      game.place_ring(2, 1, Field::RINGS[:ring_s], 2)
+      game.place_ring(1, 2, Field::RINGS[:ring_m], 0)
+      game.place_ring(2, 1, Field::RINGS[:ring_m], 2)
+      game.place_ring(1, 2, Field::RINGS[:ring_l], 0)
+      game.place_ring(2, 1, Field::RINGS[:ring_l], 2)
+
+      @clients[1][:socket].should_receive(:puts).exactly(1).with("#{WINNER} 0 1")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{WINNER} 0 1")
+
+      @server.place(@clients[1], 0, Field::RINGS[:solid], '32')
+      @server.place(@clients[2], 2, Field::RINGS[:solid], '23')
+
+      expect {
+        @server.place(@clients[1], 0, 1, '21')
+      }.to raise_error ServerError
+    end
   end
 
   it 'will send chat messages to the right clients' do
@@ -84,7 +120,7 @@ describe Server do
 
     expect {
       @server.chat(clients[0], 'chat blaat')
-    }.to raise_error
+    }.to raise_error ServerError
     @server.chat(clients[1], 'chat blaat')
     @server.chat(clients[2], 'chat blaat')
     @server.chat(clients[5], 'chat blaat')

@@ -14,7 +14,7 @@ class Server
   end
 
   def join(client, player_count)
-    raise 'The player count should be between 2 and 4' if player_count < 2 || player_count > 4
+    raise ServerError, 'The player count should be between 2 and 4' if player_count < 2 || player_count > 4
     @join_list.each_value do |list|
       list.delete(client)
     end
@@ -48,11 +48,11 @@ class Server
   end
 
   def place(client, klass, ring, location)
-    raise 'You have not joined any game yet -- `join PLAYER_COUNT`' unless client[:game_id]
+    raise ServerError, 'You have not joined any game yet -- `join PLAYER_COUNT`' unless client[:game_id]
 
     game = @games[client[:game_id]]
     current_client = game[:clients][game[:game].player]
-    raise 'It is not your turn to place a ring' unless current_client == client
+    raise ServerError, 'It is not your turn to place a ring' unless current_client == client
 
     x = location[0].to_i
     y = location[1].to_i
@@ -66,15 +66,16 @@ class Server
       current_client = game[:clients][game[:game].player][:socket]
       current_client.puts SERVER_PLACE
     rescue GameOverError
-      game[:clients].map { |c| c[:socket] }.each do |socket|
-        socket.puts "#{WINNER} #{game[:game].winners.join(' ')}"
+      game[:clients].each do |client|
+        client[:socket].puts "#{WINNER} #{game[:game].winners.join(' ')}"
+        client.delete(:game_id)
       end
       @games.delete(client[:game_id])
     end
   end
 
   def chat(client, line)
-    raise 'You have not enabled the chat -- join with `greet PLAYER_NAME 1`' unless client[:chat]
+    raise ServerError, 'You have not enabled the chat -- join with `greet PLAYER_NAME 1`' unless client[:chat]
     name = client[:name]
     msg = "#{SERVER_CHAT} #{name} #{line[SERVER_CHAT.length+1..-1]}"
 
@@ -91,3 +92,5 @@ class Server
     end
   end
 end
+
+class ServerError < StandardError; end

@@ -62,26 +62,26 @@ describe Game do
     it 'detects a gameover for all players' do
       stub_const("Board::AMOUNT_PER_RING", 1)
 
-      @game = Game.new(2)
-      @game.place_ring(1, 2, Field::RINGS[:ring_xs], 0)
-      @game.place_ring(2, 1, Field::RINGS[:ring_xs], 2)
-      @game.place_ring(1, 2, Field::RINGS[:ring_s], 0)
-      @game.place_ring(2, 1, Field::RINGS[:ring_s], 2)
-      @game.place_ring(1, 2, Field::RINGS[:ring_m], 0)
-      @game.place_ring(2, 1, Field::RINGS[:ring_m], 2)
-      @game.place_ring(1, 2, Field::RINGS[:ring_l], 0)
-      @game.place_ring(2, 1, Field::RINGS[:ring_l], 2)
+      game = Game.new(2)
+      game.place_ring(1, 2, Field::RINGS[:ring_xs], 0)
+      game.place_ring(2, 1, Field::RINGS[:ring_xs], 2)
+      game.place_ring(1, 2, Field::RINGS[:ring_s], 0)
+      game.place_ring(2, 1, Field::RINGS[:ring_s], 2)
+      game.place_ring(1, 2, Field::RINGS[:ring_m], 0)
+      game.place_ring(2, 1, Field::RINGS[:ring_m], 2)
+      game.place_ring(1, 2, Field::RINGS[:ring_l], 0)
+      game.place_ring(2, 1, Field::RINGS[:ring_l], 2)
 
-      @game.gameover?(0).should be_false
-      @game.gameover?(1).should be_false
+      game.gameover?(0).should be_false
+      game.gameover?(1).should be_false
 
-      @game.place_ring(3, 2, Field::RINGS[:solid], 0)
+      game.place_ring(3, 2, Field::RINGS[:solid], 0)
       expect {
-        @game.place_ring(2, 3, Field::RINGS[:solid], 2)
+        game.place_ring(2, 3, Field::RINGS[:solid], 2)
       }.to raise_error GameOverError
 
-      @game.gameover?(0).should be_true
-      @game.gameover?(1).should be_true
+      game.gameover?(0).should be_true
+      game.gameover?(1).should be_true
     end
   end
 
