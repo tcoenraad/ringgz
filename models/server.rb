@@ -5,6 +5,8 @@ SERVER_PLACE = 'place'
 NOTIFY = 'notify'
 WINNER = 'winner'
 SERVER_CHAT = 'chat'
+CHAT_JOIN = 'chat_join'
+CHAT_LEAVE = 'chat_leave'
 
 class Server
   def initialize(clients)
@@ -28,6 +30,10 @@ class Server
       x = rand(Board::DIM/2-1..Board::DIM/2+1)
       y = rand(Board::DIM/2-1..Board::DIM/2+1)
       setup_game(clients, x, y)
+
+      clients.each do |client|
+        chat_leave(client)
+      end
     end
   end
 
@@ -37,9 +43,9 @@ class Server
 
     @games[game_id] = { :game => game, :clients => clients }
 
-    client_names = clients.map{ |c| c[:name] }
+    player_names = clients.map{ |c| c[:name] }
     clients.each do |client|
-      client[:socket].puts "#{START} #{client_names.join(' ')} #{x}#{y}"
+      client[:socket].puts "#{START} #{player_names.join(' ')} #{x}#{y}"
       client[:game_id] = game_id
     end
 
@@ -56,6 +62,7 @@ class Server
 
     x = location[0].to_i
     y = location[1].to_i
+
     begin
       game[:game].place_ring(x, y, ring, klass)
 
@@ -69,6 +76,8 @@ class Server
       game[:clients].each do |client|
         client[:socket].puts "#{WINNER} #{game[:game].winners.join(' ')}"
         client.delete(:game_id)
+
+        chat_join(client)
       end
       @games.delete(client[:game_id])
     end
@@ -79,16 +88,35 @@ class Server
     name = client[:name]
     msg = "#{SERVER_CHAT} #{name} #{line[SERVER_CHAT.length+1..-1]}"
 
+    sockets_near(client).each do |socket|
+      socket.puts msg
+    end
+  end
+
+  def chat_join(client)
+    socket_near = sockets_near(client)
+    client[:socket].puts socket_near.join(' ')
+
+    sockets_in_lobby.each do |socket|
+      socket.puts "#{CHAT_JOIN} #{client[:name]}"
+    end
+  end
+
+  def chat_leave(client)
+    sockets_in_lobby.each do |socket|
+      socket.puts "#{CHAT_LEAVE} #{client[:name]}"
+    end
+  end
+
+  def sockets_in_lobby
+    @clients.map { |c| c[:socket] if !c[:game_id] && c[:chat] }.compact
+  end
+
+  def sockets_near(client)
     if !client[:game_id]
-      sockets_in_lobby = @clients.map { |c| c[:socket] if !c[:game_id] && c[:chat] }.compact
-      sockets_in_lobby.each do |socket|
-        socket.puts msg
-      end
+      return sockets_in_lobby
     else
-      sockets_in_game = @games[client[:game_id]][:clients].map { |c| c[:socket] if c[:chat] }.compact
-      sockets_in_game.each do |socket|
-        socket.puts msg
-      end
+      return @games[client[:game_id]][:clients].map { |c| c[:socket] if c[:chat] }.compact
     end
   end
 end

@@ -1,29 +1,51 @@
 require_relative '../models/server'
 
+def socket
+  socket = mock
+  socket.stub(:puts).and_return(true)
+  socket
+end
+
 describe Server do
   before :each do
     @server = Server.new([])
-    @socket = mock
-    @socket.stub(:puts).and_return(true)
   end
 
   it 'will handle join requests' do
-    @server.should_receive(:setup_game).exactly(3)
+    clients = []
+    clients << { :socket => socket, :name => 'client0', :chat => true }
+    clients << { :socket => socket, :name => 'client1', :chat => true }
+    clients << { :socket => socket, :name => 'client2', :chat => true }
+    clients << { :socket => socket, :name => 'client3', :chat => true }
+    clients << { :socket => socket, :name => 'client4', :chat => true }
+    clients << { :socket => socket, :name => 'client5', :chat => true }
+    clients << { :socket => socket, :name => 'client6', :chat => true }
+    clients << { :socket => socket, :name => 'client7', :chat => true }
 
-    @server.join('client1', 3)
-    @server.join('client2', 3)
-    @server.join('client3', 2)
-    @server.join('client4', 3)
-    @server.join('client5', 3)
-    @server.join('client6', 3)
-    @server.join('client7', 2)
-    @server.join('client8', 3)
+    server = Server.new(clients)
+
+    clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHAT_LEAVE} client0")
+    clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHAT_LEAVE} client1")
+    clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHAT_LEAVE} client3")
+    clients[2][:socket].should_not_receive(:puts).with("#{CHAT_LEAVE} client2")
+    clients[2][:socket].should_not_receive(:puts).with("#{CHAT_LEAVE} client4")
+    clients[2][:socket].should_not_receive(:puts).with("#{CHAT_LEAVE} client5")
+    clients[2][:socket].should_not_receive(:puts).with("#{CHAT_LEAVE} client7")
+ 
+    server.join(clients[0], 3)
+    server.join(clients[1], 3)
+    server.join(clients[2], 2)
+    server.join(clients[3], 3)
+    server.join(clients[4], 3)
+    server.join(clients[5], 3)
+    server.join(clients[6], 2)
+    server.join(clients[7], 3)
   end
 
   it 'will set-up a game correctly' do
     clients = []
-    clients << { :socket => @socket, :name => 'client0' }
-    clients << { :socket => @socket, :name => 'client1' }
+    clients << { :socket => socket, :name => 'client0' }
+    clients << { :socket => socket, :name => 'client1' }
 
     clients[0][:socket].should_receive(:puts).exactly(1).with("#{START} client0 client1 22")
     clients[1][:socket].should_receive(:puts).exactly(1).with("#{START} client0 client1 22")
@@ -35,9 +57,9 @@ describe Server do
   describe 'with regard to games' do
     before :each do
       @clients = []
-      @clients << { :socket => @socket, :name => 'client0' }
-      @clients << { :socket => @socket, :name => 'client1', :game_id => 1 }
-      @clients << { :socket => @socket, :name => 'client2', :game_id => 1 }
+      @clients << { :socket => socket, :name => 'client0' }
+      @clients << { :socket => socket, :name => 'client1', :game_id => 1 }
+      @clients << { :socket => socket, :name => 'client2', :game_id => 1 }
     end
 
     it 'will let each player place a ring when it is his turn' do
@@ -96,19 +118,19 @@ describe Server do
 
   it 'will send chat messages to the right clients' do
     clients = []
-    clients << { :socket => @socket, :name => 'client0' }
-    clients << { :socket => @socket, :name => 'client1', :chat => true }
-    clients << { :socket => @socket, :name => 'client2', :game_id => 1, :chat => true }
-    clients << { :socket => @socket, :name => 'client3', :game_id => 1, :chat => true }
-    clients << { :socket => @socket, :name => 'client4', :game_id => 2 }
-    clients << { :socket => @socket, :name => 'client5', :game_id => 2, :chat => true }
+    clients << { :socket => socket, :name => 'client0' }
+    clients << { :socket => socket, :name => 'client1', :chat => true }
+    clients << { :socket => socket, :name => 'client2', :game_id => 1, :chat => true }
+    clients << { :socket => socket, :name => 'client3', :game_id => 1, :chat => true }
+    clients << { :socket => socket, :name => 'client4', :game_id => 2 }
+    clients << { :socket => socket, :name => 'client5', :game_id => 2, :chat => true }
 
     games = {}
     games[1] = { :clients => [clients[2], clients[3]] }
     games[2] = { :clients => [clients[4], clients[5]] }
 
-    @server.instance_variable_set(:@clients, clients)
-    @server.instance_variable_set(:@games, games)
+    server = Server.new(clients)
+    server.instance_variable_set(:@games, games)
 
     clients[1][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHAT} client1 blaat")
     clients[2][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHAT} client2 blaat")
@@ -116,10 +138,10 @@ describe Server do
     clients[5][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHAT} client5 blaat")
 
     expect {
-      @server.chat(clients[0], 'chat blaat')
+      server.chat(clients[0], 'chat blaat')
     }.to raise_error ServerError
-    @server.chat(clients[1], 'chat blaat')
-    @server.chat(clients[2], 'chat blaat')
-    @server.chat(clients[5], 'chat blaat')
+    server.chat(clients[1], 'chat blaat')
+    server.chat(clients[2], 'chat blaat')
+    server.chat(clients[5], 'chat blaat')
   end
 end
