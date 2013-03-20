@@ -13,7 +13,7 @@ describe Server do
 
   it 'will handle join requests' do
     clients = []
-    clients << { :socket => socket, :name => 'client0', :chat => true }
+    clients << { :socket => socket, :name => 'client0' }
     clients << { :socket => socket, :name => 'client1', :chat => true }
     clients << { :socket => socket, :name => 'client2', :chat => true }
     clients << { :socket => socket, :name => 'client3', :chat => true }
@@ -24,12 +24,18 @@ describe Server do
 
     server = Server.new(clients)
 
-    clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHAT_LEAVE} client0")
+    clients[0][:socket].should_not_receive(:puts).with("#{CHAT_JOIN} client1")
+    clients[1][:socket].should_receive(:puts).exactly(1).with("#{CHAT_JOIN} client3")
+    clients[3][:socket].should_receive(:puts).exactly(1).with("#{CHAT_JOIN} client1")
+
     clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHAT_LEAVE} client1")
     clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHAT_LEAVE} client3")
+
+    clients[2][:socket].should_not_receive(:puts).with("#{CHAT_LEAVE} client0")
     clients[2][:socket].should_not_receive(:puts).with("#{CHAT_LEAVE} client2")
     clients[2][:socket].should_not_receive(:puts).with("#{CHAT_LEAVE} client4")
     clients[2][:socket].should_not_receive(:puts).with("#{CHAT_LEAVE} client5")
+    clients[2][:socket].should_not_receive(:puts).with("#{CHAT_LEAVE} client6")
     clients[2][:socket].should_not_receive(:puts).with("#{CHAT_LEAVE} client7")
  
     server.join(clients[0], 3)
@@ -57,61 +63,72 @@ describe Server do
   describe 'with regard to games' do
     before :each do
       @clients = []
-      @clients << { :socket => socket, :name => 'client0' }
-      @clients << { :socket => socket, :name => 'client1', :game_id => 1 }
-      @clients << { :socket => socket, :name => 'client2', :game_id => 1 }
+      @clients << { :socket => socket, :name => 'client0', :chat => true }
+      @clients << { :socket => socket, :name => 'client1' }
+      @clients << { :socket => socket, :name => 'client2', :game_id => 1, :chat => true }
+      @clients << { :socket => socket, :name => 'client3', :game_id => 1 }
+
+      @server.instance_variable_set(:@clients, @clients)
     end
 
     it 'will let each player place a ring when it is his turn' do
       games = {}
-      game_clients = [@clients[1], @clients[2]]
+      game_clients = [@clients[2], @clients[3]]
       games[1] = { :game => Game.new(2), :clients => game_clients }
 
       @server.instance_variable_set(:@games, games)
 
-      @clients[1][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} 0 1 21")
       @clients[2][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} 0 1 21")
-      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{SERVER_PLACE}")
-      @clients[1][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} 2 2 21")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} 0 1 21")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{SERVER_PLACE}")
       @clients[2][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} 2 2 21")
-      @clients[1][:socket].should_receive(:puts).exactly(1).with("#{SERVER_PLACE}")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} 2 2 21")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{SERVER_PLACE}")
 
       expect {
         @server.place(@clients[0], 0, 1, '21')
       }.to raise_error ServerError
 
-      @server.place(@clients[1], 0, 1, '21')
+      @server.place(@clients[2], 0, 1, '21')
       expect {
-        @server.place(@clients[1], 0, 2, '21')
+        @server.place(@clients[2], 0, 2, '21')
       }.to raise_error ServerError
-      @server.place(@clients[2], 2, 2, '21')
+      @server.place(@clients[3], 2, 2, '21')
     end
 
-    it 'will detect a gameover and give the winners' do
+    it 'will detect a gameover and announce all winners' do
       stub_const("Board::AMOUNT_PER_RING", 1)
 
       games = {}
-      game_clients = [@clients[1], @clients[2]]
+      game_clients = [@clients[2], @clients[3]]
       games[1] = { :game => Game.new(2), :clients => game_clients }
 
       @server.instance_variable_set(:@games, games)
 
-      @clients[1][:socket].should_receive(:puts).exactly(1).with("#{WINNER} 0 1")
       @clients[2][:socket].should_receive(:puts).exactly(1).with("#{WINNER} 0 1")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{WINNER} 0 1")
+  
+      @clients[0][:socket].should_receive(:puts).exactly(1).with("#{CHAT_JOIN} client2")
+      @clients[1][:socket].should_not_receive(:puts).with("#{CHAT_JOIN} client2")
+      @clients[2][:socket].should_receive(:puts).with("#{CHAT_JOIN} client0")
+      @clients[3][:socket].should_not_receive(:puts).with("#{CHAT_JOIN} client0")
 
-      @server.place(@clients[1], 0, Field::RINGS[:ring_xs], '12')
-      @server.place(@clients[2], 2, Field::RINGS[:ring_xs], '21')
-      @server.place(@clients[1], 0, Field::RINGS[:ring_s], '12')
-      @server.place(@clients[2], 2, Field::RINGS[:ring_s], '21')
-      @server.place(@clients[1], 0, Field::RINGS[:ring_m], '12')
-      @server.place(@clients[2], 2, Field::RINGS[:ring_m], '21')
-      @server.place(@clients[1], 0, Field::RINGS[:ring_l], '12')
-      @server.place(@clients[2], 2, Field::RINGS[:ring_l], '21')
-      @server.place(@clients[1], 0, Field::RINGS[:solid], '32')
-      @server.place(@clients[2], 2, Field::RINGS[:solid], '23')
+      @clients[0][:socket].should_not_receive(:puts).with("#{CHAT_JOIN} client3")
+      @clients[1][:socket].should_not_receive(:puts).with("#{CHAT_JOIN} client3")
+
+      @server.place(@clients[2], 0, Field::RINGS[:ring_xs], '12')
+      @server.place(@clients[3], 2, Field::RINGS[:ring_xs], '21')
+      @server.place(@clients[2], 0, Field::RINGS[:ring_s], '12')
+      @server.place(@clients[3], 2, Field::RINGS[:ring_s], '21')
+      @server.place(@clients[2], 0, Field::RINGS[:ring_m], '12')
+      @server.place(@clients[3], 2, Field::RINGS[:ring_m], '21')
+      @server.place(@clients[2], 0, Field::RINGS[:ring_l], '12')
+      @server.place(@clients[3], 2, Field::RINGS[:ring_l], '21')
+      @server.place(@clients[2], 0, Field::RINGS[:solid], '32')
+      @server.place(@clients[3], 2, Field::RINGS[:solid], '23')
 
       expect {
-        @server.place(@clients[1], 0, 1, '21')
+        @server.place(@clients[2], 0, 1, '21')
       }.to raise_error ServerError
     end
   end

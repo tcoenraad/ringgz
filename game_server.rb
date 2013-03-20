@@ -40,6 +40,8 @@ loop do
             client[:chat]      = command[2] == TRUES
             client[:challenge] = command[3] == TRUES
             client[:socket].puts "#{GREET} 1 0"
+
+            @server.chat_join(client)
           else
             raise 'You first need to introduce yourself to the server to continue -- `greet NAME`'
           end

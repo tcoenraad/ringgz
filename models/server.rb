@@ -31,6 +31,7 @@ class Server
       y = rand(Board::DIM/2-1..Board::DIM/2+1)
       setup_game(clients, x, y)
 
+      chat_join(client)
       clients.each do |client|
         chat_leave(client)
       end
@@ -76,9 +77,9 @@ class Server
       game[:clients].each do |client|
         client[:socket].puts "#{WINNER} #{game[:game].winners.join(' ')}"
         client.delete(:game_id)
-
-        chat_join(client)
       end
+      chat_join(game[:clients].first)
+
       @games.delete(client[:game_id])
     end
   end
@@ -88,35 +89,38 @@ class Server
     name = client[:name]
     msg = "#{SERVER_CHAT} #{name} #{line[SERVER_CHAT.length+1..-1]}"
 
-    sockets_near(client).each do |socket|
-      socket.puts msg
+    client[:socket].puts msg
+    chat_clients_near(client).each do |client_near|
+      client_near[:socket].puts msg
     end
   end
 
   def chat_join(client)
-    socket_near = sockets_near(client)
-    client[:socket].puts socket_near.join(' ')
-
-    sockets_in_lobby.each do |socket|
-      socket.puts "#{CHAT_JOIN} #{client[:name]}"
+    if client[:chat]
+      chat_clients_near(client).each do |client_near|
+        client[:socket].puts "#{CHAT_JOIN} #{client_near[:name]}"
+        client_near[:socket].puts "#{CHAT_JOIN} #{client[:name]}"
+      end
     end
   end
 
   def chat_leave(client)
-    sockets_in_lobby.each do |socket|
-      socket.puts "#{CHAT_LEAVE} #{client[:name]}"
+    if client[:chat]
+      chat_clients_in_lobby.each do |client_in_lobby|
+        client_in_lobby[:socket].puts "#{CHAT_LEAVE} #{client[:name]}"
+      end
     end
   end
 
-  def sockets_in_lobby
-    @clients.map { |c| c[:socket] if !c[:game_id] && c[:chat] }.compact
+  def chat_clients_in_lobby
+    @clients.select { |c| !c[:game_id] && c[:chat] }
   end
 
-  def sockets_near(client)
+  def chat_clients_near(client)
     if !client[:game_id]
-      return sockets_in_lobby
+      return chat_clients_in_lobby.select { |c| c != client }
     else
-      return @games[client[:game_id]][:clients].map { |c| c[:socket] if c[:chat] }.compact
+      return @games[client[:game_id]][:clients].select { |c| c[:chat] && c!= client }
     end
   end
 end
