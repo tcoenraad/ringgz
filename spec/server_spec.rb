@@ -25,8 +25,8 @@ describe Server do
     server = Server.new(clients)
 
     clients[0][:socket].should_not_receive(:puts).with("#{CHAT_JOIN} client1")
-    clients[1][:socket].should_receive(:puts).exactly(1).with("#{CHAT_JOIN} client3")
-    clients[3][:socket].should_receive(:puts).exactly(1).with("#{CHAT_JOIN} client1")
+    clients[1][:socket].should_receive(:puts).with("#{CHAT_JOIN} client3")
+    clients[3][:socket].should_receive(:puts).with("#{CHAT_JOIN} client1")
 
     clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHAT_LEAVE} client1")
     clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHAT_LEAVE} client3")
@@ -108,7 +108,7 @@ describe Server do
       @clients[2][:socket].should_receive(:puts).exactly(1).with("#{WINNER} 0 1")
       @clients[3][:socket].should_receive(:puts).exactly(1).with("#{WINNER} 0 1")
   
-      @clients[0][:socket].should_receive(:puts).exactly(1).with("#{CHAT_JOIN} client2")
+      @clients[0][:socket].should_receive(:puts).with("#{CHAT_JOIN} client2")
       @clients[1][:socket].should_not_receive(:puts).with("#{CHAT_JOIN} client2")
       @clients[2][:socket].should_receive(:puts).with("#{CHAT_JOIN} client0")
       @clients[3][:socket].should_not_receive(:puts).with("#{CHAT_JOIN} client0")

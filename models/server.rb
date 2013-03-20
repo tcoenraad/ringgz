@@ -31,9 +31,9 @@ class Server
       y = rand(Board::DIM/2-1..Board::DIM/2+1)
       setup_game(clients, x, y)
 
-      chat_join(client)
       clients.each do |client|
         chat_leave(client)
+        chat_join(client)
       end
     end
   end
@@ -77,8 +77,8 @@ class Server
       game[:clients].each do |client|
         client[:socket].puts "#{WINNER} #{game[:game].winners.join(' ')}"
         client.delete(:game_id)
+        chat_join(client)
       end
-      chat_join(game[:clients].first)
 
       @games.delete(client[:game_id])
     end
