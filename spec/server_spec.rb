@@ -18,34 +18,25 @@ describe Server do
     clients << { :socket => socket, :name => 'client2', :chat => true }
     clients << { :socket => socket, :name => 'client3', :chat => true }
     clients << { :socket => socket, :name => 'client4', :chat => true }
-    clients << { :socket => socket, :name => 'client5', :chat => true }
-    clients << { :socket => socket, :name => 'client6', :chat => true }
-    clients << { :socket => socket, :name => 'client7', :chat => true }
 
     server = Server.new(clients)
 
-    clients[0][:socket].should_not_receive(:puts).with("#{CHAT_JOIN} client1")
-    clients[1][:socket].should_receive(:puts).with("#{CHAT_JOIN} client3")
-    clients[3][:socket].should_receive(:puts).with("#{CHAT_JOIN} client1")
+    clients[0][:socket].should_not_receive(:puts).with("#{CHAT_LIST} client0")
+    clients[1][:socket].should_not_receive(:puts).with("#{CHAT_LIST} client0")
 
-    clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHAT_LEAVE} client1")
-    clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHAT_LEAVE} client3")
-
-    clients[2][:socket].should_not_receive(:puts).with("#{CHAT_LEAVE} client0")
-    clients[2][:socket].should_not_receive(:puts).with("#{CHAT_LEAVE} client2")
-    clients[2][:socket].should_not_receive(:puts).with("#{CHAT_LEAVE} client4")
-    clients[2][:socket].should_not_receive(:puts).with("#{CHAT_LEAVE} client5")
-    clients[2][:socket].should_not_receive(:puts).with("#{CHAT_LEAVE} client6")
-    clients[2][:socket].should_not_receive(:puts).with("#{CHAT_LEAVE} client7")
+    clients[1][:socket].should_receive(:puts).exactly(2).with("#{CHAT_LIST} client1")
+    clients[1][:socket].should_receive(:puts).exactly(2).with("#{CHAT_LIST} client4")
+  
+    clients[1][:socket].should_not_receive(:puts).with("#{CHAT_LIST} client2")
+    clients[1][:socket].should_not_receive(:puts).with("#{CHAT_LIST} client3")
+    clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHAT_LIST} client2")
+    clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHAT_LIST} client3")
  
     server.join(clients[0], 3)
     server.join(clients[1], 3)
     server.join(clients[2], 2)
-    server.join(clients[3], 3)
+    server.join(clients[3], 2)
     server.join(clients[4], 3)
-    server.join(clients[5], 3)
-    server.join(clients[6], 2)
-    server.join(clients[7], 3)
   end
 
   it 'will set-up a game correctly' do
@@ -108,13 +99,13 @@ describe Server do
       @clients[2][:socket].should_receive(:puts).exactly(1).with("#{WINNER} 0 1")
       @clients[3][:socket].should_receive(:puts).exactly(1).with("#{WINNER} 0 1")
   
-      @clients[0][:socket].should_receive(:puts).with("#{CHAT_JOIN} client2")
-      @clients[1][:socket].should_not_receive(:puts).with("#{CHAT_JOIN} client2")
-      @clients[2][:socket].should_receive(:puts).with("#{CHAT_JOIN} client0")
-      @clients[3][:socket].should_not_receive(:puts).with("#{CHAT_JOIN} client0")
+      @clients[0][:socket].should_receive(:puts).with("#{CHAT_LIST} client0")
+      @clients[0][:socket].should_not_receive(:puts).with("#{CHAT_LIST} client1")
+      @clients[0][:socket].should_receive(:puts).with("#{CHAT_LIST} client2")
+      @clients[0][:socket].should_not_receive(:puts).with("#{CHAT_LIST} client3")
 
-      @clients[0][:socket].should_not_receive(:puts).with("#{CHAT_JOIN} client3")
-      @clients[1][:socket].should_not_receive(:puts).with("#{CHAT_JOIN} client3")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHAT_LIST} client0")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHAT_LIST} client2")
 
       @server.place(@clients[2], 0, Field::RINGS[:ring_xs], '12')
       @server.place(@clients[3], 2, Field::RINGS[:ring_xs], '21')

@@ -5,8 +5,7 @@ SERVER_PLACE = 'place'
 NOTIFY = 'notify'
 WINNER = 'winner'
 SERVER_CHAT = 'chat'
-CHAT_JOIN = 'chat_join'
-CHAT_LEAVE = 'chat_leave'
+CHAT_LIST = 'chat_list'
 
 class Server
   def initialize(clients)
@@ -31,10 +30,8 @@ class Server
       y = rand(Board::DIM/2-1..Board::DIM/2+1)
       setup_game(clients, x, y)
 
-      clients.each do |client|
-        chat_leave(client)
-        chat_join(client)
-      end
+      update_game_chat_list(clients.first[:game_id])
+      update_lobby_chat_list
     end
   end
 
@@ -77,10 +74,10 @@ class Server
       game[:clients].each do |client|
         client[:socket].puts "#{WINNER} #{game[:game].winners.join(' ')}"
         client.delete(:game_id)
-        chat_join(client)
       end
 
       @games.delete(client[:game_id])
+      update_lobby_chat_list
     end
   end
 
@@ -89,38 +86,27 @@ class Server
     name = client[:name]
     msg = "#{SERVER_CHAT} #{name} #{line[SERVER_CHAT.length+1..-1]}"
 
-    client[:socket].puts msg
-    chat_clients_near(client).each do |client_near|
+    chat_clients_near = (client[:game_id]) ? @games[client[:game_id]][:clients].select { |c| c[:chat] } : @clients.select { |c| !c[:game_id] && c[:chat] }
+    chat_clients_near.each do |client_near|
       client_near[:socket].puts msg
     end
   end
 
-  def chat_join(client)
-    if client[:chat]
-      chat_clients_near(client).each do |client_near|
-        client[:socket].puts "#{CHAT_JOIN} #{client_near[:name]}"
-        client_near[:socket].puts "#{CHAT_JOIN} #{client[:name]}"
+  def update_game_chat_list(game_id)
+    chat_clients_in_game = @games[game_id][:clients].select { |c| c[:chat] }
+    chat_clients_in_game.each do |client|
+      chat_clients_in_game.each do |c|
+        client[:socket].puts "#{CHAT_LIST} #{c[:name]}"
       end
     end
   end
 
-  def chat_leave(client)
-    if client[:chat]
-      chat_clients_in_lobby.each do |client_in_lobby|
-        client_in_lobby[:socket].puts "#{CHAT_LEAVE} #{client[:name]}"
+  def update_lobby_chat_list
+    chat_clients_in_lobby = @clients.select { |c| !c[:game_id] && c[:chat] }
+    chat_clients_in_lobby.each do |client|
+      chat_clients_in_lobby.each do |c|
+        client[:socket].puts "#{CHAT_LIST} #{c[:name]}"
       end
-    end
-  end
-
-  def chat_clients_in_lobby
-    @clients.select { |c| !c[:game_id] && c[:chat] }
-  end
-
-  def chat_clients_near(client)
-    if !client[:game_id]
-      return chat_clients_in_lobby.select { |c| c != client }
-    else
-      return @games[client[:game_id]][:clients].select { |c| c[:chat] && c!= client }
     end
   end
 end
