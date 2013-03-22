@@ -52,8 +52,10 @@ loop do
             @server.place(client, command[1].to_i, command[2].to_i, command[3])
           elsif command.first == CHAT
             @server.chat(client, line)
-          # elsif command.first == CHALLENGE
-          #   @server.challenge(client, command[1], command[2], command[3])
+          elsif command.first == CHALLENGE
+            @server.challenge(client, line)
+          elsif command.first == CHALLENGE_RESPONSE
+            @server.challenge_response(client, command[1] == TRUES)
           else
             raise 'The given command is not supported, refer to the protocol for the correct syntax'
           end

@@ -5,12 +5,16 @@ SERVER_PLACE = 'place'
 NOTIFY = 'notify'
 WINNER = 'winner'
 SERVER_CHAT = 'chat'
+SERVER_CHALLENGE = 'challenge'
 CHAT_LIST = 'chat_list'
+CHALLENGE_LIST = 'challenge_List'
+CHALLENGE_RESULT = 'challenge_result'
 
 class Server
   def initialize(clients)
     @clients = clients
     @join_list = { 2 => [], 3 => [], 4 => [] }
+    @challenge_list = {}
     @games = {}
   end
 
@@ -29,9 +33,6 @@ class Server
       x = rand(Board::DIM/2-1..Board::DIM/2+1)
       y = rand(Board::DIM/2-1..Board::DIM/2+1)
       setup_game(clients, x, y)
-
-      update_game_chat_list(clients.first[:game_id])
-      update_lobby_chat_list
     end
   end
 
@@ -46,6 +47,9 @@ class Server
       client[:socket].puts "#{START} #{player_names.join(' ')} #{x}#{y}"
       client[:game_id] = game_id
     end
+
+    update_game_chat_list(game_id)
+    send_update_for_lists
 
     current_client = clients[game.player][:socket]
     current_client.puts SERVER_PLACE
@@ -77,7 +81,38 @@ class Server
       end
 
       @games.delete(client[:game_id])
-      update_lobby_chat_list
+      send_update_for_lists
+    end
+  end
+
+  def update_game_chat_list(game_id)
+    chat_clients_in_game = @games[game_id][:clients].select { |c| c[:chat] }
+    chat_clients_in_game.each do |client|
+      chat_clients_in_game.each do |c|
+        client[:socket].puts "#{CHAT_LIST} #{c[:name]}"
+      end
+    end
+  end
+
+  def chat_clients_in_lobby
+    @clients.select { |c| !c[:game_id] && c[:chat] }
+  end
+
+  def challenge_clients_in_lobby
+    @clients.select { |c| !c[:active_challenge] && c[:challenge] }
+  end
+
+  def send_update_for_lists
+    chat_clients_in_lobby.each do |client|
+      chat_clients_in_lobby.each do |c|
+        client[:socket].puts "#{CHAT_LIST} #{c[:name]}"
+      end
+    end
+
+    challenge_clients_in_lobby.each do |client|
+      challenge_clients_in_lobby.each do |c|
+        client[:socket].puts "#{CHAT_LIST} #{c[:name]}"
+      end
     end
   end
 
@@ -92,22 +127,76 @@ class Server
     end
   end
 
-  def update_game_chat_list(game_id)
-    chat_clients_in_game = @games[game_id][:clients].select { |c| c[:chat] }
-    chat_clients_in_game.each do |client|
-      chat_clients_in_game.each do |c|
-        client[:socket].puts "#{CHAT_LIST} #{c[:name]}"
-      end
+  def challenge(client, line)
+    raise ServerError, 'You have not enabled challenge -- join with `greet PLAYER_NAME CHAT 1`' unless client[:challenge]
+
+    challengees = Hash[line[SERVER_CHALLENGE.length+1..-1].split(' ').collect { |v| [v, false]}]
+
+    challengees.each_key do |challengee|
+      challengee = client(challengee)
+      raise ServerError, "You cannot challenge yourself" if challengee == client
+      raise ServerError, "You challenged #{client[:name]} who does not support challenges" unless challengee[:challenge]
+      raise ServerError, "You challenged #{client[:name]} who already is challenged" if challengee[:active_challenge]
     end
+
+    client[:active_challenge] = client[:name]
+
+    challengees.each_key do |challengee|
+      challengee_client = client(challengee)
+      challengee_client[:active_challenge] = client[:name]
+      challengee_client[:socket].puts "#{SERVER_CHALLENGE} #{client[:name]} #{challengees.keys.select{ |c| c != challengee }.compact.join(' ')}".strip
+    end
+
+    @challenge_list[client[:name]] = challengees
+
+    send_update_for_lists
   end
 
-  def update_lobby_chat_list
-    chat_clients_in_lobby = @clients.select { |c| !c[:game_id] && c[:chat] }
-    chat_clients_in_lobby.each do |client|
-      chat_clients_in_lobby.each do |c|
-        client[:socket].puts "#{CHAT_LIST} #{c[:name]}"
+  def challenge_response(client, response)
+    raise ServerError, 'You have have no active challenge -- challenge somewone with `challenge PLAYER_NAME1 PLAYER_NAME2 PLAYER_NAME_3`' unless client[:active_challenge]
+
+    challenge = @challenge_list[client[:active_challenge]]
+    if response
+      challenge[client[:name]] = true
+
+      result = true
+      challenge.each_value do |challengee_response|
+        result &= challengee_response
+      end
+
+      return unless result
+
+      msg = "#{CHALLENGE_RESULT} 1"
+
+      x = rand(Board::DIM/2-1..Board::DIM/2+1)
+      y = rand(Board::DIM/2-1..Board::DIM/2+1)
+
+      clients = challenge.keys.map { |c| client(c) }
+      clients << client(client[:active_challenge])
+      setup_game(clients.shuffle, x, y)
+    else
+      msg = "#{CHALLENGE_RESULT} 0"
+    end
+
+    client(client[:active_challenge])[:socket].puts msg
+
+    challenge.each_key do |challengee|
+      challengee_client = client(challengee)
+      challengee_client.delete(:active_challenge)
+      challengee_client[:socket].puts msg
+    end
+
+    @challenge_list.delete(client[:active_challenge])
+  end
+
+  def client(name)
+    @clients.each do |client|
+      if client[:name] == name
+        return client
       end
     end
+
+    raise 'This client is not known on this server'
   end
 end
 

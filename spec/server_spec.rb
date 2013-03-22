@@ -21,6 +21,12 @@ describe Server do
 
     server = Server.new(clients)
 
+    clients[0][:socket].should_receive(:puts).exactly(1).with(/start .+ .+ .+/)
+    clients[1][:socket].should_receive(:puts).exactly(1).with(/start .+ .+ .+/)
+    clients[2][:socket].should_receive(:puts).exactly(1).with(/start .+ .+ .+/)
+    clients[3][:socket].should_receive(:puts).exactly(1).with(/start .+ .+ .+/)
+    clients[4][:socket].should_receive(:puts).exactly(1).with(/start .+ .+ .+/)
+
     clients[0][:socket].should_not_receive(:puts).with("#{CHAT_LIST} client0")
     clients[1][:socket].should_not_receive(:puts).with("#{CHAT_LIST} client0")
 
@@ -151,5 +157,81 @@ describe Server do
     server.chat(clients[1], 'chat blaat')
     server.chat(clients[2], 'chat blaat')
     server.chat(clients[5], 'chat blaat')
+  end
+
+  describe 'with regard to challenges' do
+    before :each do
+      @clients = []
+      @clients << { :socket => socket, :name => 'client0' }
+      @clients << { :socket => socket, :name => 'client1', :challenge => true }
+      @clients << { :socket => socket, :name => 'client2', :challenge => true }
+      @clients << { :socket => socket, :name => 'client3', :challenge => true }
+      @clients << { :socket => socket, :name => 'client4', :challenge => true }
+
+      @server.instance_variable_set(:@clients, @clients)
+    end
+
+    it 'can only challenge if all clients do have challenge enabled' do
+      expect {
+        @server.challenge(@clients[1], "#{SERVER_CHALLENGE} client0 client2")
+      }.to raise_error ServerError
+    end
+
+    it 'can only challenge others' do
+      expect {
+        @server.challenge(@clients[1], "#{SERVER_CHALLENGE} client1 client2")
+      }.to raise_error ServerError
+    end
+
+    it 'can only challenge others that are not challenged yet' do
+      @server.challenge(@clients[1], "#{SERVER_CHALLENGE}  client2")
+
+      expect {
+        @server.challenge(@clients[3], "#{SERVER_CHALLENGE} client2")
+      }.to raise_error ServerError
+    end
+
+    it 'can challenge one and revoke the challenge self' do
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHALLENGE} client1")
+
+      @clients[1][:socket].should_receive(:puts).exactly(1).with("#{CHALLENGE_RESULT} 0")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHALLENGE_RESULT} 0")
+
+      @server.challenge(@clients[1], "#{SERVER_CHALLENGE} client2")
+      @server.challenge_response(@clients[1], false)
+    end
+
+    it 'can challenge two clients and accept' do
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHALLENGE} client1 client3")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHALLENGE} client1 client2")
+
+      @clients[1][:socket].should_receive(:puts).exactly(1).with(/start .+ .+ .+/)
+      @clients[2][:socket].should_receive(:puts).exactly(1).with(/start .+ .+ .+/)
+      @clients[3][:socket].should_receive(:puts).exactly(1).with(/start .+ .+ .+/)
+
+      @clients[1][:socket].should_receive(:puts).exactly(1).with("#{CHALLENGE_RESULT} 1")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHALLENGE_RESULT} 1")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{CHALLENGE_RESULT} 1")
+
+      @server.challenge(@clients[1], "#{SERVER_CHALLENGE} client2 client3")
+      @server.challenge_response(@clients[2], true)
+      @server.challenge_response(@clients[3], true)
+    end
+
+    it 'can challenge three clients and refuse' do
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHALLENGE} client1 client3 client4")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHALLENGE} client1 client2 client4")
+      @clients[4][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHALLENGE} client1 client2 client3")
+
+      @clients[1][:socket].should_receive(:puts).exactly(1).with("#{CHALLENGE_RESULT} 0")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHALLENGE_RESULT} 0")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{CHALLENGE_RESULT} 0")
+      @clients[4][:socket].should_receive(:puts).exactly(1).with("#{CHALLENGE_RESULT} 0")
+
+      @server.challenge(@clients[1], "#{SERVER_CHALLENGE} client2 client3 client4")
+      @server.challenge_response(@clients[2], true)
+      @server.challenge_response(@clients[3], true)
+      @server.challenge_response(@clients[4], false)
+    end
   end
 end
