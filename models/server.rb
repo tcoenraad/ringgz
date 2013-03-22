@@ -9,6 +9,8 @@ SERVER_CHALLENGE = 'challenge'
 CHAT_LIST = 'chat_list'
 CHALLENGE_LIST = 'challenge_List'
 CHALLENGE_RESULT = 'challenge_result'
+TRUES = '1'
+FALSCH = '0'
 
 class Server
   def initialize(clients)
@@ -117,7 +119,7 @@ class Server
   end
 
   def chat(client, line)
-    raise ServerError, 'You have not enabled the chat -- join with `greet PLAYER_NAME 1`' unless client[:chat]
+    raise ServerError, "You have not enabled the chat -- join with `greet PLAYER_NAME #{TRUES}`" unless client[:chat]
     name = client[:name]
     msg = "#{SERVER_CHAT} #{name} #{line[SERVER_CHAT.length+1..-1]}"
 
@@ -128,7 +130,7 @@ class Server
   end
 
   def challenge(client, line)
-    raise ServerError, 'You have not enabled challenge -- join with `greet PLAYER_NAME CHAT 1`' unless client[:challenge]
+    raise ServerError, "You have not enabled challenge -- join with `greet PLAYER_NAME CHAT #{TRUES}`" unless client[:challenge]
 
     challengees = Hash[line[SERVER_CHALLENGE.length+1..-1].split(' ').collect { |v| [v, false]}]
 
@@ -166,7 +168,7 @@ class Server
 
       return unless result
 
-      msg = "#{CHALLENGE_RESULT} 1"
+      msg = "#{CHALLENGE_RESULT} #{TRUES}"
 
       x = rand(Board::DIM/2-1..Board::DIM/2+1)
       y = rand(Board::DIM/2-1..Board::DIM/2+1)
@@ -175,7 +177,7 @@ class Server
       clients << client(client[:active_challenge])
       setup_game(clients.shuffle, x, y)
     else
-      msg = "#{CHALLENGE_RESULT} 0"
+      msg = "#{CHALLENGE_RESULT} #{FALSCH}"
     end
 
     client(client[:active_challenge])[:socket].puts msg
