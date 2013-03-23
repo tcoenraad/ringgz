@@ -8,6 +8,7 @@ end
 
 describe Server do
   before :each do
+    Server.any_instance.stub(:log)
     @server = Server.new([])
   end
 
@@ -21,22 +22,17 @@ describe Server do
 
     server = Server.new(clients)
 
-    clients[0][:socket].should_receive(:puts).exactly(1).with(/start .+ .+ .+/)
-    clients[1][:socket].should_receive(:puts).exactly(1).with(/start .+ .+ .+/)
-    clients[2][:socket].should_receive(:puts).exactly(1).with(/start .+ .+ .+/)
-    clients[3][:socket].should_receive(:puts).exactly(1).with(/start .+ .+ .+/)
-    clients[4][:socket].should_receive(:puts).exactly(1).with(/start .+ .+ .+/)
+    clients[0][:socket].should_receive(:puts).exactly(1).with(/#{START} .+ .+ .+/)
+    clients[1][:socket].should_receive(:puts).exactly(1).with(/#{START} .+ .+ .+/)
+    clients[2][:socket].should_receive(:puts).exactly(1).with(/#{START} .+ .+ .+/)
+    clients[3][:socket].should_receive(:puts).exactly(1).with(/#{START} .+ .+ .+/)
+    clients[4][:socket].should_receive(:puts).exactly(1).with(/#{START} .+ .+ .+/)
 
     clients[0][:socket].should_not_receive(:puts).with("#{CHAT_LIST} client0")
     clients[1][:socket].should_not_receive(:puts).with("#{CHAT_LIST} client0")
 
-    clients[1][:socket].should_receive(:puts).exactly(2).with("#{CHAT_LIST} client1")
-    clients[1][:socket].should_receive(:puts).exactly(2).with("#{CHAT_LIST} client4")
-  
-    clients[1][:socket].should_not_receive(:puts).with("#{CHAT_LIST} client2")
-    clients[1][:socket].should_not_receive(:puts).with("#{CHAT_LIST} client3")
-    clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHAT_LIST} client2")
-    clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHAT_LIST} client3")
+    clients[1][:socket].should_receive(:puts).exactly(2).with(/#{CHAT_LIST} (client1|client4) (client1|client4)/)
+    clients[2][:socket].should_receive(:puts).exactly(1).with(/#{CHAT_LIST} (client2|client3) (client2|client3)/)
  
     server.join(clients[0], 3)
     server.join(clients[1], 3)
@@ -102,16 +98,11 @@ describe Server do
 
       @server.instance_variable_set(:@games, games)
 
-      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{WINNER} 0 1")
-      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{WINNER} 0 1")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{WINNER} client2 client3")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{WINNER} client2 client3")
   
-      @clients[0][:socket].should_receive(:puts).with("#{CHAT_LIST} client0")
-      @clients[0][:socket].should_not_receive(:puts).with("#{CHAT_LIST} client1")
-      @clients[0][:socket].should_receive(:puts).with("#{CHAT_LIST} client2")
-      @clients[0][:socket].should_not_receive(:puts).with("#{CHAT_LIST} client3")
-
-      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHAT_LIST} client0")
-      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHAT_LIST} client2")
+      @clients[0][:socket].should_receive(:puts).exactly(1).with(/#{CHAT_LIST} (client0|client2) (client0|client2)/)
+      @clients[2][:socket].should_receive(:puts).exactly(1).with(/#{CHAT_LIST} (client0|client2) (client0|client2)/)
 
       @server.place(@clients[2], 0, Field::RINGS[:ring_xs], '12')
       @server.place(@clients[3], 2, Field::RINGS[:ring_xs], '21')
@@ -205,9 +196,9 @@ describe Server do
       @clients[2][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHALLENGE} client1 client3")
       @clients[3][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHALLENGE} client1 client2")
 
-      @clients[1][:socket].should_receive(:puts).exactly(1).with(/start .+ .+ .+/)
-      @clients[2][:socket].should_receive(:puts).exactly(1).with(/start .+ .+ .+/)
-      @clients[3][:socket].should_receive(:puts).exactly(1).with(/start .+ .+ .+/)
+      @clients[1][:socket].should_receive(:puts).exactly(1).with(/#{START} .+ .+ .+/)
+      @clients[2][:socket].should_receive(:puts).exactly(1).with(/#{START} .+ .+ .+/)
+      @clients[3][:socket].should_receive(:puts).exactly(1).with(/#{START} .+ .+ .+/)
 
       @clients[1][:socket].should_receive(:puts).exactly(1).with("#{CHALLENGE_RESULT} 1")
       @clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHALLENGE_RESULT} 1")

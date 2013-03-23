@@ -7,6 +7,8 @@ JOIN  = 'join'
 PLACE = 'place'
 ERROR = 'error'
 CHAT = 'chat'
+CHALLENGE = 'challenge'
+CHALLENGE_RESPONSE = 'challenge_response'
 TRUES = '1'
 
 server = TCPServer.open(7269)
@@ -39,9 +41,9 @@ loop do
             client[:name]      = command[1]
             client[:chat]      = command[2] == TRUES
             client[:challenge] = command[3] == TRUES
-            client[:socket].puts "#{GREET} 1 0"
+            client[:socket].puts "#{GREET} #{TRUES} #{TRUES}"
 
-            @server.update_lobby_chat_list
+            @server.push_lists
           else
             raise 'You first need to introduce yourself to the server to continue -- `greet NAME`'
           end
@@ -69,8 +71,10 @@ loop do
     ensure
       puts "[info] Client ##{client[:id]} from #{client[:ip]} disconnects"
 
-      client[:socket].close
       @clients.delete(client)
+      @server.game_over(@server.game(client[:game_id]), true) if client[:game_id]
+
+      client[:socket].close
     end
   end
 end
