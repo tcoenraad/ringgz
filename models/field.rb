@@ -81,8 +81,8 @@ class Field
       if !@rings.has_key?(RINGS[:solid]) && !@rings.has_key?(ring)
         # solid rings only be placed
         # if there are not yet any other rings on the field
-        # or there are no solids near
-        if ring != RINGS[:solid] || (@rings.empty? && !neighbouring_rings.include?(RINGS[:solid]))
+        # and there are no solids near from the same class
+        if ring != RINGS[:solid] || (@rings.empty? && !neighbouring_solids.include?(klass))
           return @rings[ring] = klass
         end
       end
@@ -94,22 +94,19 @@ class Field
   protected
   def neighbouring_rings
     neighbouring_rings = []
-    neighbouring_rings << @board[self.x - 1, self.y].rings.keys unless self.x - 1 < 0
-    neighbouring_rings << @board[self.x + 1, self.y].rings.keys unless self.x + 1 > Board::DIM
-    neighbouring_rings << @board[self.x, self.y - 1].rings.keys unless self.y - 1 < 0
-    neighbouring_rings << @board[self.x, self.y + 1].rings.keys unless self.y + 1 > Board::DIM
+    neighbouring_rings << @board[self.x - 1, self.y].rings unless self.x - 1 < 0
+    neighbouring_rings << @board[self.x + 1, self.y].rings unless self.x + 1 > Board::DIM
+    neighbouring_rings << @board[self.x, self.y - 1].rings unless self.y - 1 < 0
+    neighbouring_rings << @board[self.x, self.y + 1].rings unless self.y + 1 > Board::DIM
 
     neighbouring_rings.flatten
   end
 
-
   def neighbouring_classes
-    neighbouring_classes = []
-    neighbouring_classes << @board[self.x - 1, self.y].rings.values unless self.x - 1 < 0
-    neighbouring_classes << @board[self.x + 1, self.y].rings.values unless self.x + 1 > Board::DIM
-    neighbouring_classes << @board[self.x, self.y - 1].rings.values unless self.y - 1 < 0
-    neighbouring_classes << @board[self.x, self.y + 1].rings.values unless self.y + 1 > Board::DIM
+    neighbouring_rings.map {|rings| rings.values}.flatten
+  end
 
-    neighbouring_classes.flatten
+  def neighbouring_solids
+    neighbouring_rings.map { |rings| rings[RINGS[:solid]] }
   end
 end

@@ -14,6 +14,11 @@ describe Board do
   end
 
   describe "with regard to the rules on placing rings" do
+    before :each do
+      stub_const("Board::AMOUNT_PER_RING", 5)
+      @board = Board.new
+    end
+
     it "will handle multiple different rings, but not twice" do
       @board[2, 1] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
       @board[2, 1].should be_an_instance_of Field
@@ -25,7 +30,7 @@ describe Board do
       }.to raise_error
     end
 
-    it "will after adding a non solid ring, not accept a solid ring" do
+    it "will after adding a non-solid ring, not accept a solid ring" do
       @board[2, 1] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
       expect {
         @board[2, 1] = [Field::RINGS[:solid], Field::CLASSES[:first]]
@@ -52,16 +57,19 @@ describe Board do
       @board[1, 1] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
     end
 
-    it "will not accept a solid ring if nearby any other solid rings" do
+    it "will not accept a solid ring if nearby solid rings from same class" do
       @board[2, 1] = [Field::RINGS[:solid], Field::CLASSES[:first]]
       expect {
         @board[1, 1] = [Field::RINGS[:solid], Field::CLASSES[:first]]
       }.to raise_error
-      expect {
-        @board[1, 1] = [Field::RINGS[:solid], Field::CLASSES[:second]]
-      }.to raise_error
 
-      @board[1, 1] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
+      @board[1, 2] = [Field::RINGS[:ring_xs], Field::CLASSES[:second]]
+      @board[1, 1] = [Field::RINGS[:solid], Field::CLASSES[:second]]
+
+      expect {
+        @board[2, 0] = [Field::RINGS[:solid], Field::CLASSES[:first]]
+      }.to raise_error
+      @board[2, 0] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
       @board[1, 0] = [Field::RINGS[:solid],   Field::CLASSES[:first]]
     end
   end
