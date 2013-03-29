@@ -76,8 +76,8 @@ class Server
     begin
       game[:game].place_ring(x, y, ring, klass)
 
-      game[:clients].each do |client|
-        client[:socket].puts "#{NOTIFY} #{klass} #{ring} #{location}"
+      game[:clients].each do |game_client|
+        game_client[:socket].puts "#{NOTIFY} #{client[:name]} #{klass} #{ring} #{location}"
       end
 
       current_client = game[:clients][game[:game].player][:socket]

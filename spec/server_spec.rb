@@ -71,11 +71,11 @@ describe Server do
 
       @server.instance_variable_set(:@games, games)
 
-      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} 0 1 21")
-      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} 0 1 21")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} client2 0 1 21")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} client2 0 1 21")
       @clients[3][:socket].should_receive(:puts).exactly(1).with("#{SERVER_PLACE}")
-      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} 2 2 21")
-      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} 2 2 21")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} client3 2 2 21")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} client3 2 2 21")
       @clients[2][:socket].should_receive(:puts).exactly(1).with("#{SERVER_PLACE}")
 
       expect {
