@@ -218,6 +218,15 @@ class Server
     raise 'This client is not known on this server'
   end
 
+  def remove_client(client)
+    @join_list.each_value do |list|
+      list.delete(client)
+    end
+    @server.game_over(@server.game(client[:game_id]), true) if client[:game_id]
+
+    @clients.delete(client)
+  end    
+
   def game(id)
     @games[id]
   end

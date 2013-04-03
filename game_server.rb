@@ -71,8 +71,7 @@ loop do
     ensure
       puts "[info] Client ##{client[:id]} from #{client[:ip]} disconnects"
 
-      @clients.delete(client)
-      @server.game_over(@server.game(client[:game_id]), true) if client[:game_id]
+      @server.remove_client(client)
 
       client[:socket].close
     end
