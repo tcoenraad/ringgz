@@ -71,22 +71,22 @@ describe Server do
 
       @server.instance_variable_set(:@games, games)
 
-      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} client2 0 1 21")
-      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} client2 0 1 21")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} client2 21 1 0")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} client2 21 1 0")
       @clients[3][:socket].should_receive(:puts).exactly(1).with("#{SERVER_PLACE}")
-      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} client3 2 2 21")
-      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} client3 2 2 21")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} client3 21 2 2")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} client3 21 2 2")
       @clients[2][:socket].should_receive(:puts).exactly(1).with("#{SERVER_PLACE}")
 
       expect {
-        @server.place(@clients[0], 0, 1, '21')
+        @server.place(@clients[0], '21', 1, 0)
       }.to raise_error ServerError
 
-      @server.place(@clients[2], 0, 1, '21')
+      @server.place(@clients[2], '21', 1, 0)
       expect {
-        @server.place(@clients[2], 0, 2, '21')
+        @server.place(@clients[2], '21', 2, 0)
       }.to raise_error ServerError
-      @server.place(@clients[3], 2, 2, '21')
+      @server.place(@clients[3], '21', 2, 2)
     end
 
     it 'will detect a gameover and announce all winners' do
@@ -104,16 +104,16 @@ describe Server do
       @clients[0][:socket].should_receive(:puts).exactly(1).with(/#{CHAT_LIST} (client0|client2) (client0|client2)/)
       @clients[2][:socket].should_receive(:puts).exactly(1).with(/#{CHAT_LIST} (client0|client2) (client0|client2)/)
 
-      @server.place(@clients[2], 0, Field::RINGS[:ring_xs], '12')
-      @server.place(@clients[3], 2, Field::RINGS[:ring_xs], '21')
-      @server.place(@clients[2], 0, Field::RINGS[:ring_s], '12')
-      @server.place(@clients[3], 2, Field::RINGS[:ring_s], '21')
-      @server.place(@clients[2], 0, Field::RINGS[:ring_m], '12')
-      @server.place(@clients[3], 2, Field::RINGS[:ring_m], '21')
-      @server.place(@clients[2], 0, Field::RINGS[:ring_l], '12')
-      @server.place(@clients[3], 2, Field::RINGS[:ring_l], '21')
-      @server.place(@clients[2], 0, Field::RINGS[:solid], '32')
-      @server.place(@clients[3], 2, Field::RINGS[:solid], '23')
+      @server.place(@clients[2], '12', Field::RINGS[:ring_xs], 0)
+      @server.place(@clients[3], '21', Field::RINGS[:ring_xs], 2)
+      @server.place(@clients[2], '12', Field::RINGS[:ring_s], 0)
+      @server.place(@clients[3], '21', Field::RINGS[:ring_s], 2)
+      @server.place(@clients[2], '12', Field::RINGS[:ring_m], 0)
+      @server.place(@clients[3], '21', Field::RINGS[:ring_m], 2)
+      @server.place(@clients[2], '12', Field::RINGS[:ring_l], 0)
+      @server.place(@clients[3], '21', Field::RINGS[:ring_l], 2)
+      @server.place(@clients[2], '32', Field::RINGS[:solid], 0)
+      @server.place(@clients[3], '23', Field::RINGS[:solid], 2)
 
       expect {
         @server.place(@clients[2], 0, 1, '21')

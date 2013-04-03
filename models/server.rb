@@ -63,7 +63,7 @@ class Server
     current_client.puts SERVER_PLACE
   end
 
-  def place(client, klass, ring, location)
+  def place(client, location, ring, klass)
     raise ServerError, 'You have not joined any game yet -- `join PLAYER_COUNT`' unless client[:game_id]
 
     game = @games[client[:game_id]]
@@ -77,7 +77,7 @@ class Server
       game[:game].place_ring(x, y, ring, klass)
 
       game[:clients].each do |game_client|
-        game_client[:socket].puts "#{NOTIFY} #{client[:name]} #{klass} #{ring} #{location}"
+        game_client[:socket].puts "#{NOTIFY} #{client[:name]} #{location} #{ring} #{klass}"
       end
 
       current_client = game[:clients][game[:game].player][:socket]

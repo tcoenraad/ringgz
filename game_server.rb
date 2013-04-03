@@ -51,7 +51,7 @@ loop do
           if command.first == JOIN
             @server.join(client, command[1].to_i)
           elsif command.first == PLACE
-            @server.place(client, command[1].to_i, command[2].to_i, command[3])
+            @server.place(client, command[1], command[2].to_i, command[3].to_i)
           elsif command.first == CHAT
             @server.chat(client, line)
           elsif command.first == CHALLENGE
