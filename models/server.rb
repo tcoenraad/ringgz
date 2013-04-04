@@ -137,7 +137,7 @@ class Server
   def chat(client, line)
     raise ServerError, "You have not enabled the chat -- join with `greet PLAYER_NAME #{SERVER_TRUES}`" unless client[:chat]
     name = client[:name]
-    msg = "#{SERVER_CHAT} #{name} #{line[SERVER_CHAT.length+1..-1]}"
+    msg = "#{SERVER_CHAT} #{name} #{line[SERVER_CHAT.length+1+name.length+1..-1]}"
 
     chat_clients_near = (client[:game_id]) ? @games[client[:game_id]][:clients].select { |c| c[:chat] } : @clients.select { |c| !c[:game_id] && c[:chat] }
     chat_clients_near.each do |client_near|

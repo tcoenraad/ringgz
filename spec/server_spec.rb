@@ -149,11 +149,11 @@ describe Server do
     clients[5][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHAT} client5 blaat")
 
     expect {
-      server.chat(clients[0], 'chat blaat')
+      server.chat(clients[0], 'chat client0 blaat')
     }.to raise_error ServerError
-    server.chat(clients[1], 'chat blaat')
-    server.chat(clients[2], 'chat blaat')
-    server.chat(clients[5], 'chat blaat')
+    server.chat(clients[1], 'chat client1 blaat')
+    server.chat(clients[2], 'chat client2 blaat')
+    server.chat(clients[5], 'chat client5 blaat')
   end
 
   describe 'with regard to challenges' do
