@@ -72,6 +72,17 @@ describe Board do
       @board[2, 0] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
       @board[1, 0] = [Field::RINGS[:solid],   Field::CLASSES[:first]]
     end
+
+    it 'will accept a ring on the outer edge' do
+      @board[2,3] = [Field::RINGS[:ring_xs], Field::CLASSES[:first]]
+      @board[3,3] = [Field::RINGS[:ring_s], Field::CLASSES[:first]]
+      @board[3,4] = [Field::RINGS[:ring_m], Field::CLASSES[:first]]
+      @board[4,4] = [Field::RINGS[:ring_l], Field::CLASSES[:first]]
+
+      expect {
+        @board[4,5] = [Field::RINGS[:solid], Field::CLASSES[:first]]
+      }.to raise_error
+    end
   end
 
   describe "with regard to the stock" do

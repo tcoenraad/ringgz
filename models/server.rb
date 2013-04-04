@@ -73,6 +73,8 @@ class Server
     x = location[0].to_i
     y = location[1].to_i
 
+    raise ServerError, "The location you gave (#{x}, #{y}) is not valid" if x < 0 || x > Board::DIM || y < 0 || y > Board::DIM
+
     begin
       game[:game].place_ring(x, y, ring, klass)
 

@@ -95,9 +95,9 @@ class Field
   def neighbouring_rings
     neighbouring_rings = []
     neighbouring_rings << @board[self.x - 1, self.y].rings unless self.x - 1 < 0
-    neighbouring_rings << @board[self.x + 1, self.y].rings unless self.x + 1 > Board::DIM
+    neighbouring_rings << @board[self.x + 1, self.y].rings unless self.x + 1 >= Board::DIM
     neighbouring_rings << @board[self.x, self.y - 1].rings unless self.y - 1 < 0
-    neighbouring_rings << @board[self.x, self.y + 1].rings unless self.y + 1 > Board::DIM
+    neighbouring_rings << @board[self.x, self.y + 1].rings unless self.y + 1 >= Board::DIM
 
     neighbouring_rings.flatten
   end

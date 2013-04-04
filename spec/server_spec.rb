@@ -64,6 +64,12 @@ describe Server do
       @server.instance_variable_set(:@clients, @clients)
     end
 
+    it 'will only accept valid moves' do
+      expect {
+        @server.place(@clients[0], '55', 1, 0)
+      }.to raise_error ServerError
+    end
+
     it 'will let each player place a ring when it is his turn' do
       games = {}
       game_clients = [@clients[2], @clients[3]]
