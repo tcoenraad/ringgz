@@ -64,12 +64,6 @@ describe Server do
       @server.instance_variable_set(:@clients, @clients)
     end
 
-    it 'will only accept valid moves' do
-      expect {
-        @server.place(@clients[0], '55', 1, 0)
-      }.to raise_error ServerError
-    end
-
     it 'will let each player place a ring when it is his turn' do
       games = {}
       game_clients = [@clients[2], @clients[3]]
@@ -124,6 +118,19 @@ describe Server do
       expect {
         @server.place(@clients[2], 0, 1, '21')
       }.to raise_error ServerError
+    end
+
+    it 'will handle a rage quit' do
+      games = {}
+      game_clients = [@clients[2], @clients[3]]
+      games[1] = { :game => TwoPlayersGame.new(2, 2), :clients => game_clients }
+
+      @server.instance_variable_set(:@games, games)
+
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{WINNER}")
+      @clients[3][:socket].should_not_receive(:puts).with("#{WINNER}")
+
+      @server.remove_client(@clients[3])
     end
   end
 

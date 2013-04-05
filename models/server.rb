@@ -229,12 +229,13 @@ class Server
   end
 
   def remove_client(client)
+    @clients.delete(client)
+
     @join_list.each_value do |list|
       list.delete(client)
     end
-    @server.game_over(@server.game(client[:game_id]), true) if client[:game_id]
 
-    @clients.delete(client)
+    game_over(game(client[:game_id]), true) if client[:game_id]
   end    
 
   def game(id)
