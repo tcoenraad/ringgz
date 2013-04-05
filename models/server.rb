@@ -74,7 +74,7 @@ class Server
   def place(client, location, ring, klass)
     raise ServerError, 'You have not joined any game yet -- `join PLAYER_COUNT`' unless client[:game_id]
 
-    game = @games[client[:game_id]]
+    game = game[client[:game_id]]
     current_client = game[:clients][game[:game].player]
     raise ServerError, 'It is not your turn to place a ring' unless current_client == client
 
@@ -147,7 +147,7 @@ class Server
     name = client[:name]
     msg = "#{SERVER_CHAT} #{name} #{line[SERVER_CHAT.length+1+name.length+1..-1]}"
 
-    chat_clients_near = (client[:game_id]) ? @games[client[:game_id]][:clients].select { |c| c[:chat] } : @clients.select { |c| !c[:game_id] && c[:chat] }
+    chat_clients_near = (client[:game_id]) ? game[client[:game_id]][:clients].select { |c| c[:chat] } : @clients.select { |c| !c[:game_id] && c[:chat] }
     chat_clients_near.each do |client_near|
       client_near[:socket].puts msg
     end
