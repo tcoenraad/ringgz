@@ -2,7 +2,7 @@ require_relative '../models/field'
 
 describe Field do
   before :each do
-    @field = Field.new(Board.new, 1, 2)
+    @field = Field.new(Board.new(2, 2), 1, 2)
   end
 
   it "has no winner if empty" do

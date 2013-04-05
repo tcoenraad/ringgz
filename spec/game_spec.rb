@@ -1,9 +1,9 @@
-require_relative '../models/game'
+require_relative '../models/games'
 
 describe Game do
   describe 'with regard to two players' do
     before :each do
-      @game = Game.new(2)
+      @game = TwoPlayersGame.new(2, 2)
     end
 
     it 'does only accept a class when it belongs to the player' do
@@ -42,7 +42,7 @@ describe Game do
     end
 
     it 'detects a gameover for one player' do
-      board = Board.new
+      board = Board.new(2, 2)
       @game.instance_variable_set :@board, board
 
       board[3, 2] = [Field::RINGS[:solid], Field::CLASSES[:first]]
@@ -62,7 +62,7 @@ describe Game do
     it 'detects a gameover for all players' do
       stub_const("Board::AMOUNT_PER_RING", 1)
 
-      game = Game.new(2)
+      game = TwoPlayersGame.new(2, 2)
       game.place_ring(1, 2, Field::RINGS[:ring_xs], 0)
       game.place_ring(2, 1, Field::RINGS[:ring_xs], 2)
       game.place_ring(1, 2, Field::RINGS[:ring_s], 0)
@@ -87,7 +87,7 @@ describe Game do
 
   describe 'with regard to three players' do
     before :each do
-      @game = Game.new(3)
+      @game = ThreePlayersGame.new(2, 2)
     end
 
     it 'does only accept a class when it belongs to the player' do
@@ -130,7 +130,7 @@ describe Game do
 
   describe 'with regard to four players' do
     before :each do
-      @game = Game.new(4)
+      @game = FourPlayersGame.new(2, 2)
     end
 
     it 'does only accept a class when it belongs to the player' do

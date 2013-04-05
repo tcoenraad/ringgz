@@ -50,7 +50,7 @@ describe Server do
     clients[1][:socket].should_receive(:puts).exactly(1).with("#{START} client0 client1 22")
     clients[0][:socket].should_receive(:puts).exactly(1).with("#{SERVER_PLACE}")
 
-    @server.setup_game(clients)
+    @server.setup_game(clients, 2, 2)
   end
 
   describe 'with regard to games' do
@@ -73,7 +73,7 @@ describe Server do
     it 'will let each player place a ring when it is his turn' do
       games = {}
       game_clients = [@clients[2], @clients[3]]
-      games[1] = { :game => Game.new(2), :clients => game_clients }
+      games[1] = { :game => TwoPlayersGame.new(2, 2), :clients => game_clients }
 
       @server.instance_variable_set(:@games, games)
 
@@ -100,7 +100,7 @@ describe Server do
 
       games = {}
       game_clients = [@clients[2], @clients[3]]
-      games[1] = { :game => Game.new(2), :clients => game_clients }
+      games[1] = { :game => TwoPlayersGame.new(2, 2), :clients => game_clients }
 
       @server.instance_variable_set(:@games, games)
 

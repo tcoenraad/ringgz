@@ -4,7 +4,7 @@ class Board
   DIM = 5
   AMOUNT_PER_RING = 3
 
-  def initialize(x_start = DIM/2, y_start = DIM/2)
+  def initialize(x_start, y_start)
     @fields = Array.new(DIM) { |x| Array.new(DIM) { |y| Field.new self, x, y } }
     @stock = {}
 

@@ -2,7 +2,7 @@ require_relative '../models/board'
 
 describe Board do
   before :each do
-    @board = Board.new
+    @board = Board.new(2, 2)
   end
 
   it "will set-up properly" do
@@ -16,7 +16,7 @@ describe Board do
   describe "with regard to the rules on placing rings" do
     before :each do
       stub_const("Board::AMOUNT_PER_RING", 5)
-      @board = Board.new
+      @board = Board.new(2, 2)
     end
 
     it "will handle multiple different rings, but not twice" do

@@ -1,4 +1,4 @@
-require_relative 'game'
+require_relative 'games'
 
 START = 'start'
 SERVER_PLACE = 'place'
@@ -42,10 +42,18 @@ class Server
     end
   end
 
-  def setup_game(clients, x = 2, y = 2)
+  def setup_game(clients, x, y)
     log "A game has started! Gamers are: #{clients.map{ |c| c[:name] }.join(', ')}"
 
-    game = Game.new(clients.count, x, y)
+    case clients.count
+    when 2
+      game = TwoPlayersGame.new(x, y)
+    when 3
+      game = ThreePlayersGame.new(x, y)
+    when 4
+      game = FourPlayersGame.new(x, y)
+    end
+
     game_id = game.__id__
 
     @games[game_id] = { :game => game, :clients => clients }
