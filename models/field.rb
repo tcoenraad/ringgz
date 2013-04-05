@@ -16,12 +16,11 @@ class Field
     :fourth => 3
   }
 
-  attr_reader :rings
+  attr_accessor :rings
   attr_reader :x
   attr_reader :y
 
-  def initialize board, x, y, start = false
-    @board = board
+  def initialize x, y, start = false
     @rings = {}
 
     @x = x
@@ -61,52 +60,5 @@ class Field
     end
 
     false
-  end
-
-  def place_ring?(ring, klass)
-    begin
-      place_ring(ring, klass)
-      @rings.delete(ring)
-
-      return true
-    rescue
-      return false
-    end
-  end
-
-  def place_ring(ring, klass)
-    if neighbouring_classes.include?(klass)
-      # a solid ring cannot have any inner rings
-      # and rings cannot be overwritten
-      if !@rings.has_key?(RINGS[:solid]) && !@rings.has_key?(ring)
-        # solid rings only be placed
-        # if there are not yet any other rings on the field
-        # and there are no solids near from the same class
-        if ring != RINGS[:solid] || (@rings.empty? && !neighbouring_solids.include?(klass))
-          return @rings[ring] = klass
-        end
-      end
-    end
-
-    raise "This ring #{ring} with class #{klass} cannot be placed on this field [#{x}, #{y}], with neighbouring classes #{neighbouring_rings} and rings #{neighbouring_rings}"
-  end
-
-  protected
-  def neighbouring_rings
-    neighbouring_rings = []
-    neighbouring_rings << @board[self.x - 1, self.y].rings unless self.x - 1 < 0
-    neighbouring_rings << @board[self.x + 1, self.y].rings unless self.x + 1 >= Board::DIM
-    neighbouring_rings << @board[self.x, self.y - 1].rings unless self.y - 1 < 0
-    neighbouring_rings << @board[self.x, self.y + 1].rings unless self.y + 1 >= Board::DIM
-
-    neighbouring_rings.flatten
-  end
-
-  def neighbouring_classes
-    neighbouring_rings.map {|rings| rings.values}.flatten
-  end
-
-  def neighbouring_solids
-    neighbouring_rings.map { |rings| rings[RINGS[:solid]] }
   end
 end
