@@ -90,8 +90,8 @@ class Game
       # and is the only one
       if winning_players.count == 1
         return true
-      # or is the one with the largest stock
-      elsif stock[player] == stock.select{ |k, v| winning_players.include?(k) }.values.max
+      # or is the one with the smallest stock
+      elsif stock[player] == stock.select{ |k, v| winning_players.include?(k) }.values.min
         return true
       end
     end

@@ -38,7 +38,7 @@ describe Game do
       @game.winners.should eq [0, 1]
 
       @game.place_ring(1, 1, Field::RINGS[:ring_s], 0)
-      @game.winners.should eq [1]
+      @game.winners.should eq [0]
     end
 
     it 'detects a gameover for one player' do
@@ -121,7 +121,7 @@ describe Game do
       @game.winners.should eq [0]
 
       @game.place_ring(2, 1, Field::RINGS[:ring_s], 1)
-      @game.winners.should eq [2]
+      @game.winners.should eq [0, 1]
 
       @game.place_ring(2, 1, Field::RINGS[:ring_m], 2)
       @game.winner?(2).should be_true
