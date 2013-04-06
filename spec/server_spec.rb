@@ -9,7 +9,7 @@ end
 describe Server do
   before :each do
     Server.any_instance.stub(:log)
-    @server = Server.new([])
+    @server = Server.new
   end
 
   it 'will handle join requests' do
@@ -20,7 +20,8 @@ describe Server do
     clients << { :socket => socket, :name => 'client3', :chat => true }
     clients << { :socket => socket, :name => 'client4', :chat => true }
 
-    server = Server.new(clients)
+    server = Server.new
+    server.instance_variable_set(:@clients, clients)
 
     clients[0][:socket].should_receive(:puts).exactly(1).with(/#{START} .+ .+ .+/)
     clients[1][:socket].should_receive(:puts).exactly(1).with(/#{START} .+ .+ .+/)
@@ -147,7 +148,8 @@ describe Server do
     games[1] = { :clients => [clients[2], clients[3]] }
     games[2] = { :clients => [clients[4], clients[5]] }
 
-    server = Server.new(clients)
+    server = Server.new
+    server.instance_variable_set(:@clients, clients)
     server.instance_variable_set(:@games, games)
 
     clients[1][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHAT} client1 blaat")

@@ -12,8 +12,7 @@ CHALLENGE_RESPONSE = 'challenge_response'
 TRUES = '1'
 
 server = TCPServer.open(7269)
-@clients = []
-@server = Server.new(@clients)
+@server = Server.new
 id = 0
 
 puts "[info] Server started on ip #{Socket.ip_address_list.detect{|iface| iface.ipv4_private?}.ip_address} with port 7269"
@@ -23,9 +22,9 @@ loop do
       client = {
         :socket => client,
         :id => id += 1,
-        :ip => client.peeraddr[3]
+        :ip => client.peeraddr.last
       }
-      @clients << client
+      @server.clients << client
 
       puts "[info] Client ##{client[:id]} from #{client[:ip]} connects"
 
@@ -36,7 +35,7 @@ loop do
         if !client[:name] 
           if command.first == GREET
             name = command[1]
-            raise 'The given name is already in use' if @clients.map{|c| c[:name]}.include?(name)
+            raise 'The given name is already in use' if @server.clients.map{|c| c[:name]}.include?(name)
 
             client[:name]      = command[1]
             client[:chat]      = command[2] == TRUES

@@ -13,8 +13,10 @@ SERVER_TRUES = '1'
 FALSCH = '0'
 
 class Server
-  def initialize(clients)
-    @clients = clients
+  attr_accessor :clients
+
+  def initialize
+    @clients = []
     @join_list = { 2 => [], 3 => [], 4 => [] }
     @challenge_list = {}
     @games = {}
