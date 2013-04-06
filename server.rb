@@ -16,7 +16,7 @@ server = TCPServer.open(7269)
 @server = Server.new(@clients)
 id = 0
 
-puts "[info] Server started on port 7269"
+puts "[info] Server started on ip #{Socket.ip_address_list.detect{|iface| iface.ipv4_private?}.ip_address} with port 7269"
 loop do
   Thread.start(server.accept) do |client|
     begin
