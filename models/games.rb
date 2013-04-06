@@ -29,7 +29,7 @@ class ThreePlayersGame < Game
 
   def place_ring(x, y, ring, klass)
     # for three players, the fourth class is equally shared
-    if @players.count == 3 && klass == Field::CLASSES[:fourth]
+    if klass == Field::CLASSES[:fourth]
       if deduct_from_fourth_class_stock?(ring, player)
         deduct_from_fourth_class_stock(ring, player)
       else
