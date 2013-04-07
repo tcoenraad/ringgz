@@ -23,17 +23,17 @@ describe Server do
     server = Server.new
     server.instance_variable_set(:@clients, clients)
 
-    clients[0][:socket].should_receive(:puts).exactly(1).with(/#{START} .+ .+ .+/)
-    clients[1][:socket].should_receive(:puts).exactly(1).with(/#{START} .+ .+ .+/)
-    clients[2][:socket].should_receive(:puts).exactly(1).with(/#{START} .+ .+ .+/)
-    clients[3][:socket].should_receive(:puts).exactly(1).with(/#{START} .+ .+ .+/)
-    clients[4][:socket].should_receive(:puts).exactly(1).with(/#{START} .+ .+ .+/)
+    clients[0][:socket].should_receive(:puts).exactly(1).with(/#{Protocol::START} .+ .+ .+/)
+    clients[1][:socket].should_receive(:puts).exactly(1).with(/#{Protocol::START} .+ .+ .+/)
+    clients[2][:socket].should_receive(:puts).exactly(1).with(/#{Protocol::START} .+ .+ .+/)
+    clients[3][:socket].should_receive(:puts).exactly(1).with(/#{Protocol::START} .+ .+ .+/)
+    clients[4][:socket].should_receive(:puts).exactly(1).with(/#{Protocol::START} .+ .+ .+/)
 
-    clients[0][:socket].should_not_receive(:puts).with("#{CHAT_LIST} client0")
-    clients[1][:socket].should_not_receive(:puts).with("#{CHAT_LIST} client0")
+    clients[0][:socket].should_not_receive(:puts).with("#{Protocol::CHAT_LIST} client0")
+    clients[1][:socket].should_not_receive(:puts).with("#{Protocol::CHAT_LIST} client0")
 
-    clients[1][:socket].should_receive(:puts).exactly(2).with(/#{CHAT_LIST} (client1|client4) (client1|client4)/)
-    clients[2][:socket].should_receive(:puts).exactly(1).with(/#{CHAT_LIST} (client2|client3) (client2|client3)/)
+    clients[1][:socket].should_receive(:puts).exactly(2).with(/#{Protocol::CHAT_LIST} (client1|client4) (client1|client4)/)
+    clients[2][:socket].should_receive(:puts).exactly(1).with(/#{Protocol::CHAT_LIST} (client2|client3) (client2|client3)/)
  
     server.join(clients[0], 3)
     server.join(clients[1], 3)
@@ -47,9 +47,9 @@ describe Server do
     clients << { :socket => socket, :name => 'client0' }
     clients << { :socket => socket, :name => 'client1' }
 
-    clients[0][:socket].should_receive(:puts).exactly(1).with("#{START} client0 client1 22")
-    clients[1][:socket].should_receive(:puts).exactly(1).with("#{START} client0 client1 22")
-    clients[0][:socket].should_receive(:puts).exactly(1).with("#{SERVER_PLACE}")
+    clients[0][:socket].should_receive(:puts).exactly(1).with("#{Protocol::START} client0 client1 22")
+    clients[1][:socket].should_receive(:puts).exactly(1).with("#{Protocol::START} client0 client1 22")
+    clients[0][:socket].should_receive(:puts).exactly(1).with("#{Protocol::PLACE}")
 
     @server.setup_game(clients, 2, 2)
   end
@@ -72,12 +72,12 @@ describe Server do
 
       @server.instance_variable_set(:@games, games)
 
-      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} client2 21 1 0")
-      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} client2 21 1 0")
-      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{SERVER_PLACE}")
-      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} client3 21 2 2")
-      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{NOTIFY} client3 21 2 2")
-      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{SERVER_PLACE}")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{Protocol::NOTIFY} client2 21 1 0")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{Protocol::NOTIFY} client2 21 1 0")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{Protocol::PLACE}")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{Protocol::NOTIFY} client3 21 2 2")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{Protocol::NOTIFY} client3 21 2 2")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{Protocol::PLACE}")
 
       expect {
         @server.place(@clients[0], '21', 1, 0)
@@ -99,11 +99,11 @@ describe Server do
 
       @server.instance_variable_set(:@games, games)
 
-      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{WINNER} client2 client3")
-      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{WINNER} client2 client3")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{Protocol::WINNER} client2 client3")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{Protocol::WINNER} client2 client3")
   
-      @clients[0][:socket].should_receive(:puts).exactly(1).with(/#{CHAT_LIST} (client0|client2) (client0|client2)/)
-      @clients[2][:socket].should_receive(:puts).exactly(1).with(/#{CHAT_LIST} (client0|client2) (client0|client2)/)
+      @clients[0][:socket].should_receive(:puts).exactly(1).with(/#{Protocol::CHAT_LIST} (client0|client2) (client0|client2)/)
+      @clients[2][:socket].should_receive(:puts).exactly(1).with(/#{Protocol::CHAT_LIST} (client0|client2) (client0|client2)/)
 
       @server.place(@clients[2], '12', Field::RINGS[:ring_xs], 0)
       @server.place(@clients[3], '21', Field::RINGS[:ring_xs], 2)
@@ -128,8 +128,8 @@ describe Server do
 
       @server.instance_variable_set(:@games, games)
 
-      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{WINNER}")
-      @clients[3][:socket].should_not_receive(:puts).with("#{WINNER}")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{Protocol::WINNER}")
+      @clients[3][:socket].should_not_receive(:puts).with("#{Protocol::WINNER}")
 
       @server.remove_client(@clients[3])
     end
@@ -152,17 +152,17 @@ describe Server do
     server.instance_variable_set(:@clients, clients)
     server.instance_variable_set(:@games, games)
 
-    clients[1][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHAT} client1 blaat")
-    clients[2][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHAT} client2 blaat")
-    clients[3][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHAT} client2 blaat")
-    clients[5][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHAT} client5 blaat")
+    clients[1][:socket].should_receive(:puts).exactly(1).with("#{Protocol::CHAT} client1 blaat")
+    clients[2][:socket].should_receive(:puts).exactly(1).with("#{Protocol::CHAT} client2 blaat")
+    clients[3][:socket].should_receive(:puts).exactly(1).with("#{Protocol::CHAT} client2 blaat")
+    clients[5][:socket].should_receive(:puts).exactly(1).with("#{Protocol::CHAT} client5 blaat")
 
     expect {
-      server.chat(clients[0], 'chat client0 blaat')
+      server.chat(clients[0], "#{Protocol::CHAT} client0 blaat")
     }.to raise_error ServerError
-    server.chat(clients[1], 'chat client1 blaat')
-    server.chat(clients[2], 'chat client2 blaat')
-    server.chat(clients[5], 'chat client5 blaat')
+    server.chat(clients[1], "#{Protocol::CHAT} client1 blaat")
+    server.chat(clients[2], "#{Protocol::CHAT} client2 blaat")
+    server.chat(clients[5], "#{Protocol::CHAT} client5 blaat")
   end
 
   describe 'with regard to challenges' do
@@ -179,65 +179,65 @@ describe Server do
 
     it 'can only challenge if all clients do have challenge enabled' do
       expect {
-        @server.challenge(@clients[1], "#{SERVER_CHALLENGE} client0 client2")
+        @server.challenge(@clients[1], "#{Protocol::CHALLENGE} client0 client2")
       }.to raise_error ServerError
     end
 
     it 'can only challenge others' do
       expect {
-        @server.challenge(@clients[1], "#{SERVER_CHALLENGE} client1 client2")
+        @server.challenge(@clients[1], "#{Protocol::CHALLENGE} client1 client2")
       }.to raise_error ServerError
     end
 
     it 'can only challenge others that are not challenged yet' do
-      @server.challenge(@clients[1], "#{SERVER_CHALLENGE}  client2")
+      @server.challenge(@clients[1], "#{Protocol::CHALLENGE}  client2")
 
       expect {
-        @server.challenge(@clients[3], "#{SERVER_CHALLENGE} client2")
+        @server.challenge(@clients[3], "#{Protocol::CHALLENGE} client2")
       }.to raise_error ServerError
     end
 
     it 'can challenge one and revoke the challenge self' do
-      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHALLENGE} client1")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{Protocol::CHALLENGE} client1")
 
-      @clients[1][:socket].should_receive(:puts).exactly(1).with("#{CHALLENGE_RESULT} 0")
-      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHALLENGE_RESULT} 0")
+      @clients[1][:socket].should_receive(:puts).exactly(1).with("#{Protocol::CHALLENGE_RESULT} 0")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{Protocol::CHALLENGE_RESULT} 0")
 
-      @server.challenge(@clients[1], "#{SERVER_CHALLENGE} client2")
+      @server.challenge(@clients[1], "#{Protocol::CHALLENGE} client2")
       @server.challenge_response(@clients[1], false)
     end
 
     it 'can challenge two clients and accept' do
-      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHALLENGE} client1 client3")
-      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHALLENGE} client1 client2")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{Protocol::CHALLENGE} client1 client3")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{Protocol::CHALLENGE} client1 client2")
 
-      @clients[1][:socket].should_receive(:puts).exactly(1).with(/#{START} .+ .+ .+/)
-      @clients[2][:socket].should_receive(:puts).exactly(1).with(/#{START} .+ .+ .+/)
-      @clients[3][:socket].should_receive(:puts).exactly(1).with(/#{START} .+ .+ .+/)
+      @clients[1][:socket].should_receive(:puts).exactly(1).with(/#{Protocol::START} .+ .+ .+/)
+      @clients[2][:socket].should_receive(:puts).exactly(1).with(/#{Protocol::START} .+ .+ .+/)
+      @clients[3][:socket].should_receive(:puts).exactly(1).with(/#{Protocol::START} .+ .+ .+/)
 
-      @clients[1][:socket].should_receive(:puts).exactly(1).with("#{CHALLENGE_RESULT} 1")
-      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHALLENGE_RESULT} 1")
-      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{CHALLENGE_RESULT} 1")
+      @clients[1][:socket].should_receive(:puts).exactly(1).with("#{Protocol::CHALLENGE_RESULT} 1")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{Protocol::CHALLENGE_RESULT} 1")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{Protocol::CHALLENGE_RESULT} 1")
 
-      @server.challenge(@clients[1], "#{SERVER_CHALLENGE} client2 client3")
-      @server.challenge_response(@clients[2], true)
-      @server.challenge_response(@clients[3], true)
+      @server.challenge(@clients[1], "#{Protocol::CHALLENGE} client2 client3")
+      @server.challenge_response(@clients[2], Protocol::TRUE)
+      @server.challenge_response(@clients[3], Protocol::TRUE)
     end
 
     it 'can challenge three clients and refuse' do
-      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHALLENGE} client1 client3 client4")
-      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHALLENGE} client1 client2 client4")
-      @clients[4][:socket].should_receive(:puts).exactly(1).with("#{SERVER_CHALLENGE} client1 client2 client3")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{Protocol::CHALLENGE} client1 client3 client4")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{Protocol::CHALLENGE} client1 client2 client4")
+      @clients[4][:socket].should_receive(:puts).exactly(1).with("#{Protocol::CHALLENGE} client1 client2 client3")
 
-      @clients[1][:socket].should_receive(:puts).exactly(1).with("#{CHALLENGE_RESULT} 0")
-      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{CHALLENGE_RESULT} 0")
-      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{CHALLENGE_RESULT} 0")
-      @clients[4][:socket].should_receive(:puts).exactly(1).with("#{CHALLENGE_RESULT} 0")
+      @clients[1][:socket].should_receive(:puts).exactly(1).with("#{Protocol::CHALLENGE_RESULT} 0")
+      @clients[2][:socket].should_receive(:puts).exactly(1).with("#{Protocol::CHALLENGE_RESULT} 0")
+      @clients[3][:socket].should_receive(:puts).exactly(1).with("#{Protocol::CHALLENGE_RESULT} 0")
+      @clients[4][:socket].should_receive(:puts).exactly(1).with("#{Protocol::CHALLENGE_RESULT} 0")
 
-      @server.challenge(@clients[1], "#{SERVER_CHALLENGE} client2 client3 client4")
-      @server.challenge_response(@clients[2], true)
-      @server.challenge_response(@clients[3], true)
-      @server.challenge_response(@clients[4], false)
+      @server.challenge(@clients[1], "#{Protocol::CHALLENGE} client2 client3 client4")
+      @server.challenge_response(@clients[2], Protocol::TRUE)
+      @server.challenge_response(@clients[3], Protocol::TRUE)
+      @server.challenge_response(@clients[4], Protocol::FALSE)
     end
   end
 end

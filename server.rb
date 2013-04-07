@@ -1,15 +1,9 @@
+require_relative 'models/protocol'
 require_relative 'models/server'
+
 require 'socket'
 require 'colorize'
 
-GREET = 'greet'
-JOIN  = 'join'
-PLACE = 'place'
-ERROR = 'error'
-CHAT = 'chat'
-CHALLENGE = 'challenge'
-CHALLENGE_RESPONSE = 'challenge_response'
-TRUES = '1'
 
 server = TCPServer.open(7269)
 @server = Server.new
@@ -33,30 +27,30 @@ loop do
         puts "[info] Client ##{client[:id]} from #{client[:ip]} gives command `#{line}`"
 
         if !client[:name] 
-          if command.first == GREET
+          if command.first == Protocol::GREET
             name = command[1]
             raise 'The given name is already in use' if @server.clients.map{|c| c[:name]}.include?(name)
 
             client[:name]      = command[1]
-            client[:chat]      = command[2] == TRUES
-            client[:challenge] = command[3] == TRUES
-            client[:socket].puts "#{GREET} #{TRUES} #{TRUES}"
+            client[:chat]      = command[2] == Protocol::TRUE
+            client[:challenge] = command[3] == Protocol::TRUE
+            client[:socket].puts "#{Protocol::GREET} #{Protocol::TRUE} #{Protocol::TRUE}"
 
             @server.push_lists
           else
             raise 'You first need to introduce yourself to the server to continue -- `greet NAME`'
           end
         else
-          if command.first == JOIN
+          if command.first == Protocol::JOIN
             @server.join(client, command[1].to_i)
-          elsif command.first == PLACE
+          elsif command.first == Protocol::PLACE
             @server.place(client, command[1], command[2].to_i, command[3].to_i)
-          elsif command.first == CHAT
+          elsif command.first == Protocol::CHAT
             @server.chat(client, line)
-          elsif command.first == CHALLENGE
+          elsif command.first == Protocol::CHALLENGE
             @server.challenge(client, line)
-          elsif command.first == CHALLENGE_RESPONSE
-            @server.challenge_response(client, command[1] == TRUES)
+          elsif command.first == Protocol::CHALLENGE_RESPONSE
+            @server.challenge_response(client, command[1])
           else
             raise 'The given command is not supported, refer to the protocol for the correct syntax'
           end
@@ -66,7 +60,7 @@ loop do
       puts "[exception] Client ##{client[:id]} from #{client[:ip]}: #{e.message}".red
       puts e.backtrace.join("\n").yellow
 
-      client[:socket].puts "#{ERROR} #{e.message}"
+      client[:socket].puts "#{Protocol::ERROR} #{e.message}"
     ensure
       puts "[info] Client ##{client[:id]} from #{client[:ip]} disconnects"
 

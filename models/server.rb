@@ -1,16 +1,5 @@
+require_relative 'protocol'
 require_relative 'games'
-
-START = 'start'
-SERVER_PLACE = 'place'
-NOTIFY = 'notify'
-WINNER = 'winner'
-SERVER_CHAT = 'chat'
-SERVER_CHALLENGE = 'challenge'
-CHAT_LIST = 'chat_list'
-CHALLENGE_LIST = 'challenge_list'
-CHALLENGE_RESULT = 'challenge_result'
-SERVER_TRUES = '1'
-FALSCH = '0'
 
 class Server
   attr_accessor :clients
@@ -62,7 +51,7 @@ class Server
 
     player_names = clients.map{ |c| c[:name] }
     clients.each do |client|
-      client[:socket].puts "#{START} #{player_names.join(' ')} #{x}#{y}"
+      client[:socket].puts "#{Protocol::START} #{player_names.join(' ')} #{x}#{y}"
       client[:game_id] = game_id
     end
 
@@ -70,7 +59,7 @@ class Server
     push_lists
 
     current_client = clients[game.player][:socket]
-    current_client.puts SERVER_PLACE
+    current_client.puts Protocol::PLACE
   end
 
   def place(client, location, ring, klass)
@@ -89,11 +78,11 @@ class Server
       game[:game].place_ring(x, y, ring, klass)
 
       game[:clients].each do |game_client|
-        game_client[:socket].puts "#{NOTIFY} #{client[:name]} #{location} #{ring} #{klass}"
+        game_client[:socket].puts "#{Protocol::NOTIFY} #{client[:name]} #{location} #{ring} #{klass}"
       end
 
       current_client = game[:clients][game[:game].player][:socket]
-      current_client.puts SERVER_PLACE
+      current_client.puts Protocol::PLACE
     rescue GameOverError
       game_over(game)
     end
@@ -111,7 +100,7 @@ class Server
     game[:clients].each do |client|
       next unless @clients.include?(client)
 
-      client[:socket].puts "#{WINNER} #{winning_clients.join(' ')}".strip
+      client[:socket].puts "#{Protocol::WINNER} #{winning_clients.join(' ')}".strip
       client.delete(:game_id)
     end
 
@@ -122,7 +111,7 @@ class Server
   def push_game_chat_list(game_id)
     chat_clients_in_game = game(game_id)[:clients].select { |c| c[:chat] }
     chat_clients_in_game.each do |client|
-      client[:socket].puts "#{CHAT_LIST} #{chat_clients_in_game.map { |c| c[:name] }.join(' ')}"
+      client[:socket].puts "#{Protocol::CHAT_LIST} #{chat_clients_in_game.map { |c| c[:name] }.join(' ')}"
     end
   end
 
@@ -136,18 +125,18 @@ class Server
 
   def push_lists
     chat_clients_in_lobby.each do |client|
-      client[:socket].puts "#{CHAT_LIST} #{chat_clients_in_lobby.map{|c| c[:name]}.join(' ')}"
+      client[:socket].puts "#{Protocol::CHAT_LIST} #{chat_clients_in_lobby.map{|c| c[:name]}.join(' ')}"
     end
 
     challenge_clients_in_lobby.each do |client|
-      client[:socket].puts "#{CHALLENGE_LIST} #{challenge_clients_in_lobby.map{|c| c[:name]}.join(' ')}"
+      client[:socket].puts "#{Protocol::CHALLENGE_LIST} #{challenge_clients_in_lobby.map{|c| c[:name]}.join(' ')}"
     end
   end
 
   def chat(client, line)
-    raise ServerError, "You have not enabled the chat -- join with `greet PLAYER_NAME #{SERVER_TRUES}`" unless client[:chat]
+    raise ServerError, "You have not enabled the chat -- join with `greet PLAYER_NAME #{Protocol::TRUE}`" unless client[:chat]
     name = client[:name]
-    msg = "#{SERVER_CHAT} #{name} #{line[SERVER_CHAT.length+1+name.length+1..-1]}"
+    msg = "#{Protocol::CHAT} #{name} #{line[Protocol::CHAT.length+1+name.length+1..-1]}"
 
     chat_clients_near = (client[:game_id]) ? game(client[:game_id])[:clients].select { |c| c[:chat] } : @clients.select { |c| !c[:game_id] && c[:chat] }
     chat_clients_near.each do |client_near|
@@ -158,7 +147,7 @@ class Server
   def challenge(client, line)
     raise ServerError, "You have not enabled challenge -- join with `greet PLAYER_NAME CHAT #{SERVER_TRUES}`" unless client[:challenge]
 
-    challengees = Hash[line[SERVER_CHALLENGE.length+1..-1].split(' ').collect { |v| [v, false]}]
+    challengees = Hash[line[Protocol::CHALLENGE.length+1..-1].split(' ').collect { |v| [v, nil]}]
     raise ServerError, "You can only challenge one to three people" if challengees.count < 1 || challengees.count > 3
 
     challengees.each_key do |challengee|
@@ -175,7 +164,7 @@ class Server
     challengees.each_key do |challengee|
       challengee_client = client(challengee)
       challengee_client[:active_challenge] = client[:name]
-      challengee_client[:socket].puts "#{SERVER_CHALLENGE} #{client[:name]} #{challengees.keys.select{ |c| c != challengee }.join(' ')}".strip
+      challengee_client[:socket].puts "#{Protocol::CHALLENGE} #{client[:name]} #{challengees.keys.select{ |c| c != challengee }.join(' ')}".strip
     end
 
     @challenge_list[client[:name]] = challengees
@@ -187,7 +176,8 @@ class Server
     raise ServerError, 'You have have no active challenge -- challenge somewone with `challenge PLAYER_NAME1 PLAYER_NAME2 PLAYER_NAME_3`' unless client[:active_challenge]
 
     challenge = @challenge_list[client[:active_challenge]]
-    if response
+    clients = []
+    if response == Protocol::TRUE
       challenge[client[:name]] = true
 
       result = true
@@ -197,18 +187,15 @@ class Server
 
       return unless result
 
-      msg = "#{CHALLENGE_RESULT} #{SERVER_TRUES}"
+      msg = "#{Protocol::CHALLENGE_RESULT} #{Protocol::TRUE}"
 
-      x = rand(Board::DIM/2-1..Board::DIM/2+1)
-      y = rand(Board::DIM/2-1..Board::DIM/2+1)
-
-      clients = challenge.keys.map { |c| client(c) }
+      clients.concat(challenge.keys.map { |c| client(c) })
       clients << client(client[:active_challenge])
-      setup_game(clients.shuffle, x, y)
     else
-      msg = "#{CHALLENGE_RESULT} #{FALSCH}"
+      msg = "#{Protocol::CHALLENGE_RESULT} #{Protocol::FALSE}"
     end
 
+    @challenge_list.delete(client[:active_challenge])
     client(client[:active_challenge])[:socket].puts msg
 
     challenge.each_key do |challengee|
@@ -217,7 +204,11 @@ class Server
       challengee_client[:socket].puts msg
     end
 
-    @challenge_list.delete(client[:active_challenge])
+    if clients.any?
+      x = rand(Board::DIM/2-1..Board::DIM/2+1)
+      y = rand(Board::DIM/2-1..Board::DIM/2+1)
+      setup_game(clients.shuffle, x, y)
+    end
   end
 
   def client(name)
