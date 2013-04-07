@@ -1,9 +1,7 @@
-require_relative 'models/protocol'
 require_relative 'models/server'
 
 require 'socket'
 require 'colorize'
-
 
 server = TCPServer.open(7269)
 @server = Server.new

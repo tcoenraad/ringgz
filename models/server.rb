@@ -176,7 +176,6 @@ class Server
     raise ServerError, 'You have have no active challenge -- challenge somewone with `challenge PLAYER_NAME1 PLAYER_NAME2 PLAYER_NAME_3`' unless client[:active_challenge]
 
     challenge = @challenge_list[client[:active_challenge]]
-    clients = []
     if response == Protocol::TRUE
       challenge[client[:name]] = true
 
@@ -189,7 +188,7 @@ class Server
 
       msg = "#{Protocol::CHALLENGE_RESULT} #{Protocol::TRUE}"
 
-      clients.concat(challenge.keys.map { |c| client(c) })
+      clients = challenge.keys.map { |c| client(c) }
       clients << client(client[:active_challenge])
     else
       msg = "#{Protocol::CHALLENGE_RESULT} #{Protocol::FALSE}"
@@ -204,7 +203,7 @@ class Server
       challengee_client[:socket].puts msg
     end
 
-    if clients.any?
+    if clients
       x = rand(Board::DIM/2-1..Board::DIM/2+1)
       y = rand(Board::DIM/2-1..Board::DIM/2+1)
       setup_game(clients.shuffle, x, y)
