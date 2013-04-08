@@ -3,11 +3,16 @@ require_relative 'models/server'
 require 'socket'
 require 'colorize'
 
-server = TCPServer.open(7269)
+port = ARGV.first.to_i
+if port < 1023 || port > 65535
+  port = 7269
+end
+server = TCPServer.open(port)
+
 @server = Server.new
 id = 0
 
-puts "[info] Server started on ip #{Socket.ip_address_list.detect{|iface| iface.ipv4_private?}.ip_address} with port 7269"
+puts "[info] Server started with ip #{Socket.ip_address_list.detect{|iface| iface.ipv4_private?}.ip_address} on port #{port}"
 loop do
   Thread.start(server.accept) do |client|
     begin

@@ -16,7 +16,7 @@ How to run
 ==========
 Run server:
 
-    $ ruby server.rb
+    $ bundle exec ruby server.rb <port = 7269>
 
 after this, any ringgz client following the protocol described in `lib/Protocol.java` can connect
 
