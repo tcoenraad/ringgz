@@ -34,8 +34,6 @@ class Server
   end
 
   def setup_game(clients, x, y)
-    log "A game has started! Gamers are: #{clients.map{ |c| c[:name] }.join(', ')}"
-
     case clients.count
     when 2
       game = TwoPlayersGame.new(x, y)
@@ -46,6 +44,7 @@ class Server
     end
 
     game_id = game.__id__
+    log "Game ##{game_id} has started! Gamers are (in this order): #{clients.map{ |c| c[:name] }.join(', ')}"
 
     @games[game_id] = { :game => game, :clients => clients }
 
@@ -58,8 +57,10 @@ class Server
     push_game_chat_list(game_id)
     push_lists
 
-    current_client = clients[game.player][:socket]
-    current_client.puts Protocol::PLACE
+    current_client = clients[game.player]
+    current_client[:socket].puts Protocol::PLACE
+
+    log "Client #{current_client[:id]} `#{current_client[:name]}` is next in game ##{game_id}"
   end
 
   def place(client, location, ring, klass)
@@ -81,8 +82,10 @@ class Server
         game_client[:socket].puts "#{Protocol::NOTIFY} #{client[:name]} #{location} #{ring} #{klass}"
       end
 
-      current_client = game[:clients][game[:game].player][:socket]
-      current_client.puts Protocol::PLACE
+      current_client = game[:clients][game[:game].player]
+      current_client[:socket].puts Protocol::PLACE
+      
+      log "Client #{current_client[:id]} `#{current_client[:name]}` is next in game ##{current_client[:game_id]}"
     rescue GameOverError
       game_over(game)
     end

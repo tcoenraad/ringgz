@@ -27,7 +27,7 @@ loop do
 
       while line = client[:socket].gets.strip;
         command = line.split(' ')
-        puts "[info] Client ##{client[:id]} from #{client[:ip]} gives command `#{line}`"
+        puts "[info] Client ##{client[:id]} `#{client[:name] || 'unknown'}` from #{client[:ip]} gives command `#{line}`"
 
         if !client[:name] 
           if command.first == Protocol::GREET
@@ -60,12 +60,12 @@ loop do
         end
       end
     rescue Exception => e
-      puts "[exception] Client ##{client[:id]} from #{client[:ip]}: #{e.message}".red
+      puts "[exception] Client ##{client[:id]} `#{client[:name] || 'unknown'}` from #{client[:ip]}: #{e.message}".red
       puts e.backtrace.join("\n").yellow
 
       client[:socket].puts "#{Protocol::ERROR} #{e.message}"
     ensure
-      puts "[info] Client ##{client[:id]} from #{client[:ip]} disconnects"
+      puts "[info] Client ##{client[:id]} `#{client[:name] || 'unknown'}` from #{client[:ip]} disconnects"
 
       @server.remove_client(client)
 
