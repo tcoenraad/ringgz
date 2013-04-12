@@ -92,12 +92,14 @@ class Server
   end
 
   def game_over(game, rage_quit = false)
+    log "Game ##{game.__id__} is over!"
+
+    winning_clients = []
     if rage_quit
-      winning_clients = []
-      log "Wow, that's a rage quit!"
+      log "And it was a rage quit!"
     else
-      winning_clients = game[:game].winners.map{|w| game[:clients][w][:name]}
-      log "That's a game over! Winners were: #{winning_clients.join(', ')}".strip
+      winning_clients << game[:game].winners.map{|w| game[:clients][w][:name]}
+      log "Winners were: #{winning_clients.join(', ')}".strip
     end
 
     game[:clients].each do |client|
@@ -109,13 +111,6 @@ class Server
 
     @games.delete(game[:game].__id__)
     push_lists
-  end
-
-  def push_game_chat_list(game_id)
-    chat_clients_in_game = game(game_id)[:clients].select { |c| c[:chat] }
-    chat_clients_in_game.each do |client|
-      client[:socket].puts "#{Protocol::CHAT_LIST} #{chat_clients_in_game.map { |c| c[:name] }.join(' ')}"
-    end
   end
 
   def chat_clients_in_lobby
@@ -133,6 +128,13 @@ class Server
 
     challenge_clients_in_lobby.each do |client|
       client[:socket].puts "#{Protocol::CHALLENGE_LIST} #{challenge_clients_in_lobby.map{|c| c[:name]}.join(' ')}"
+    end
+  end
+
+  def push_game_chat_list(game_id)
+    chat_clients_in_game = game(game_id)[:clients].select { |c| c[:chat] }
+    chat_clients_in_game.each do |client|
+      client[:socket].puts "#{Protocol::CHAT_LIST} #{chat_clients_in_game.map { |c| c[:name] }.join(' ')}"
     end
   end
 
@@ -162,7 +164,7 @@ class Server
 
     client[:active_challenge] = client[:name]
 
-    log "A challenge from #{client[:name]} has been requested for #{challengees.keys.select{ |c| c != client[:name] }.join(', ')}".strip
+    log "A challenge from #{client[:name]} has been requested for #{challengees.keys.join(', ')}"
 
     challengees.each_key do |challengee|
       challengee_client = client(challengee)
@@ -220,7 +222,7 @@ class Server
       end
     end
 
-    raise 'This client is not known on this server'
+    raise "Client `#{name}` is not known on this server"
   end
 
   def remove_client(client)
