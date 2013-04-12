@@ -14,15 +14,20 @@ How to set-up
 
 How to run
 ==========
+
 Run server:
+
+    $ bundle exec rake
+
+Or, on a custom port:
 
     $ bundle exec ruby server.rb <port = 7269>
 
-after this, any ringgz client following the protocol described in `lib/Protocol.java` can connect
+After this, any ringgz client following the protocol described in `lib/Protocol.java` can connect
 
 Run specs:
 
-    $ bundle exec rspec
+    $ bundle exec rake test
 
 Screenshots
 ===========
