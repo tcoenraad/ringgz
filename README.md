@@ -25,6 +25,8 @@ Run specs:
 
     $ bundle exec rake
 
+[![Build Status](https://travis-ci.org/tcoenraad/ringgz.png?branch=master)](https://travis-ci.org/tcoenraad/ringgz)
+
 Screenshots
 ===========
 
