@@ -30,4 +30,4 @@ Run specs:
 Screenshots
 ===========
 
-![image](http://i.imgur.com/LLkpM9d.png)
+![screenshot](http://i.imgur.com/HNF28u6.png)
