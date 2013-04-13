@@ -23,7 +23,7 @@ loop do
       }
       @server.clients << client
 
-      puts "[info] Client ##{client[:id]} from #{client[:ip]} connects"
+      puts "[info] Client ##{client[:id]} from #{client[:ip]} connects".green
 
       while line = client[:socket].gets.strip;
         command = line.split(' ')
@@ -64,10 +64,9 @@ loop do
       puts e.backtrace.join("\n").yellow
 
       client[:socket].puts "#{Protocol::ERROR} #{e.message}"
+      @server.remove_client(client)
     ensure
       puts "[info] Client ##{client[:id]} `#{client[:name] || 'unknown'}` from #{client[:ip]} disconnects"
-
-      @server.remove_client(client)
 
       client[:socket].close
     end

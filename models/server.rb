@@ -44,7 +44,7 @@ class Server
     end
 
     game_id = game.__id__
-    log "Game ##{game_id} has started! Gamers are (in this order): #{clients.map{ |c| c[:name] }.join(', ')}"
+    log "Game ##{game_id} has started! Gamers are: #{clients.map{ |c| c[:name] }.join(', ')}"
 
     @games[game_id] = { :game => game, :clients => clients }
 
@@ -60,7 +60,7 @@ class Server
     current_client = clients[game.player]
     current_client[:socket].puts Protocol::PLACE
 
-    log "Client #{current_client[:id]} `#{current_client[:name]}` is next in game ##{game_id}"
+    log "Client ##{current_client[:id]} `#{current_client[:name]}` is next in game ##{game_id}"
   end
 
   def place(client, location, ring, klass)
@@ -85,7 +85,7 @@ class Server
       current_client = game[:clients][game[:game].player]
       current_client[:socket].puts Protocol::PLACE
       
-      log "Client #{current_client[:id]} `#{current_client[:name]}` is next in game ##{current_client[:game_id]}"
+      log "Client ##{current_client[:id]} `#{current_client[:name]}` is next in game ##{current_client[:game_id]}"
     rescue GameOverError
       game_over(game)
     end
