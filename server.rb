@@ -12,7 +12,7 @@ server = TCPServer.open(port)
 @server = Server.new
 id = 0
 
-puts "[info] Server started with on port #{port}"
+puts "[info] Server started on port #{port}"
 loop do
   Thread.start(server.accept) do |client|
     begin
