@@ -32,6 +32,7 @@ loop do
         if !client[:name] 
           if command.first == Protocol::GREET
             name = command[1]
+            raise 'The given name cannot be empty' unless name 
             raise 'The given name is already in use' if @server.clients.map{|c| c[:name]}.include?(name)
 
             client[:name]      = command[1]
