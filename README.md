@@ -3,7 +3,7 @@ ringgz
 
 [![Build Status](https://travis-ci.org/tcoenraad/ringgz.png?branch=master)](https://travis-ci.org/tcoenraad/ringgz)
 
-a ringgz server for programmeren 2 - ruby edition  
+a ringgz server for programmeren 2 - Ruby edition  
 
 *with chat and challenge support*
 
