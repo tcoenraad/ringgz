@@ -1,9 +1,10 @@
-ringgz
+Ringgz
 ======
 
 [![Build Status](https://travis-ci.org/tcoenraad/ringgz.png?branch=master)](https://travis-ci.org/tcoenraad/ringgz)
+[![Code Climate](https://codeclimate.com/github/tcoenraad/ringgz.png)](https://codeclimate.com/github/tcoenraad/ringgz)
 
-a ringgz server for programmeren 2 - Ruby edition  
+a Ringgz server for programmeren 2 - Ruby edition  
 
 *with chat and challenge support*
 
